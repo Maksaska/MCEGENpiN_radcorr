@@ -1,0 +1,3 @@
+#!/bin/sh  
+g++ -o App App.cpp `root-config --cflags --libs` -O3;
+./App < Input.txt
