@@ -1,4 +1,4 @@
-#include <iostream> 
+#include <iostream> /*Git reminder*/
 #include <fstream>
 #include <vector>
 #include <string.h>
@@ -509,8 +509,8 @@ void All(vector<vector<double>>& V, const int& FileNumber)
 			ang1 = fRand(0, 180); 
 			ang2 = fRand(0, 360);
 			
-	adron.SetPxPyPzE(p*cos(phi*M_PI/180)*sin(theta*M_PI/180) ,p*sin(phi*M_PI/180)*sin(theta*M_PI/180) ,p*cos(theta*M_PI/180) , Ep);
-	meson.SetPxPyPzE(-p*cos(phi*M_PI/180)*sin(theta*M_PI/180) ,-p*sin(phi*M_PI/180)*sin(theta*M_PI/180) ,-p*cos(theta*M_PI/180) , Epi);
+	adron.SetPxPyPzE(-p*cos(phi*M_PI/180)*sin(theta*M_PI/180) ,-p*sin(phi*M_PI/180)*sin(theta*M_PI/180) ,-p*cos(theta*M_PI/180) , Ep);
+	meson.SetPxPyPzE(p*cos(phi*M_PI/180)*sin(theta*M_PI/180) ,p*sin(phi*M_PI/180)*sin(theta*M_PI/180) ,p*cos(theta*M_PI/180) , Epi);
 	gamma1.SetPxPyPzE(mpi*cos(ang2*M_PI/180)*sin(ang1*M_PI/180)/2 ,mpi*sin(ang2*M_PI/180)*sin(ang1*M_PI/180)/2 ,mpi*cos(ang1*M_PI/180)/2 ,mpi/2);
 gamma2.SetPxPyPzE(-mpi*cos(ang2*M_PI/180)*sin(ang1*M_PI/180)/2 ,-mpi*sin(ang2*M_PI/180)*sin(ang1*M_PI/180)/2 ,-mpi*cos(ang1*M_PI/180)/2 ,mpi/2);
 
@@ -581,7 +581,7 @@ int main(int argc, char **argv)
 	vector<string> VecShap; 
 
 	cout << " ---------------------------------------------------- " << endl;
-	cout << "| Welcome to event builder for Pi0p and Pi+n channels| \n| of meson electroproduction reaction!               |       \n|                                                    |\n| Authors: Davydov M. - MSU, Physics dep.            |\n|          Isupov E.  - MSU, SINP                    |\n| Version 2.2    https://clas.sinp.msu.ru/~maksaska/ |\n ----------------------------------------------------" << endl;
+	cout << "| Welcome to event builder for Pi0p and Pi+n channels| \n| of meson electroproduction reaction!               |       \n|                                                    |\n| Authors: Davydov M. - MSU, Physics dep.            |\n|          Isupov E.  - MSU, SINP                    |\n| Version 2.3    https://clas.sinp.msu.ru/~maksaska/ |\n ----------------------------------------------------" << endl;
 	
 	cout << endl;	
 
