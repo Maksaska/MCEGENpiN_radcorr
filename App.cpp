@@ -1,4 +1,4 @@
-#include <iostream> /*Git reminder*/
+#include <iostream> 
 #include <fstream>
 #include <vector>
 #include <string.h>
@@ -31,12 +31,12 @@ using namespace std;
 
 auto c1 = new TCanvas("c1", "Histogram", 1280, 1080); 
   
-TH2* h1 = new TH2F("h1", "Histogram (W,Q^{2})_2d", 186, 1.075, 2.005, 202, -0.025, 5.025);
+TH2* h1 = new TH2F("h1", "Histogram (W,Q^{2})_2d", 186, 1.08, 2, 440, 0, 11);
 TH1F* h3 = new TH1F("h3", "Histogram W", 186, 1.08, 2);
-TH1F* h4 = new TH1F("h4", "Histogram Q^{2}", 202, 0, 5);
-vector<double> Settings(5); vector<int> Settings_mode(5);	
+TH1F* h4 = new TH1F("h4", "Histogram Q^{2}", 440, 0, 11);
+vector<double> Settings(5); vector<int> Settings_mode(5); int Q2_degree_extr(0);	
 
-void Reeding(string Path,vector<vector<double>>& V2, vector<string>& V3)
+void Reading(string Path,vector<vector<double>>& V2, vector<string>& V3)
 {
 	string lane, line, word; stringstream ss;
 	ifstream File;
@@ -260,7 +260,13 @@ double Sections(vector<double>& info,const int& t, double& W, double& Q2,const i
 
 	eps = 1/(1 + 2*(nu*nu + Q2)/(4*(E0 - nu)*E0 - Q2));
 
-	S = C*Rt + eps*C*Rl*CC*CC + CC*sqrt(2*eps*(1 + eps))*Rtl*cos(phi*M_PI/180)*C + eps*C*Rtt*cos(phi*M_PI/90);
+	if(Q2 > 5)
+	{
+	S = pow(sqrt(5), Q2_degree_extr)*(C*Rt + eps*C*Rl*CC*CC + CC*sqrt(2*eps*(1 + eps))*Rtl*cos(phi*M_PI/180)*C + eps*C*Rtt*cos(phi*M_PI/90))/pow(sqrt(Q2), Q2_degree_extr);
+	} else 
+	{
+		S = C*Rt + eps*C*Rl*CC*CC + CC*sqrt(2*eps*(1 + eps))*Rtl*cos(phi*M_PI/180)*C + eps*C*Rtt*cos(phi*M_PI/90);
+	}
 
 	Mp.clear(); Mm.clear(); Ep.clear(); Em.clear(); Lp.clear(); Lm.clear(); 
 
@@ -388,9 +394,9 @@ double Quadratic(vector<vector<double>>& V, const double& W,  const double& Q2, 
 	Q2_1 = floor(Q2*20)/20;
 	Q2_2 = ceil(Q2*20)/20;
 
-	if(Q2_2 == 5)
+	if(Q2_2 == 11)
 	{
-		Q2_3 = 5;
+		Q2_3 = 11;
 		Q2_2 -= 0.05;		
 		Q2_1 -= 0.05;
 	} else {Q2_3 = Q2_2 + 0.05;}
@@ -509,8 +515,8 @@ void All(vector<vector<double>>& V, const int& FileNumber)
 			ang1 = fRand(0, 180); 
 			ang2 = fRand(0, 360);
 			
-	adron.SetPxPyPzE(-p*cos(phi*M_PI/180)*sin(theta*M_PI/180) ,-p*sin(phi*M_PI/180)*sin(theta*M_PI/180) ,-p*cos(theta*M_PI/180) , Ep);
 	meson.SetPxPyPzE(p*cos(phi*M_PI/180)*sin(theta*M_PI/180) ,p*sin(phi*M_PI/180)*sin(theta*M_PI/180) ,p*cos(theta*M_PI/180) , Epi);
+	adron.SetPxPyPzE(-p*cos(phi*M_PI/180)*sin(theta*M_PI/180) ,-p*sin(phi*M_PI/180)*sin(theta*M_PI/180) ,-p*cos(theta*M_PI/180) , Ep);
 	gamma1.SetPxPyPzE(mpi*cos(ang2*M_PI/180)*sin(ang1*M_PI/180)/2 ,mpi*sin(ang2*M_PI/180)*sin(ang1*M_PI/180)/2 ,mpi*cos(ang1*M_PI/180)/2 ,mpi/2);
 gamma2.SetPxPyPzE(-mpi*cos(ang2*M_PI/180)*sin(ang1*M_PI/180)/2 ,-mpi*sin(ang2*M_PI/180)*sin(ang1*M_PI/180)/2 ,-mpi*cos(ang1*M_PI/180)/2 ,mpi/2);
 
@@ -581,7 +587,7 @@ int main(int argc, char **argv)
 	vector<string> VecShap; 
 
 	cout << " ---------------------------------------------------- " << endl;
-	cout << "| Welcome to event builder for Pi0p and Pi+n channels| \n| of meson electroproduction reaction!               |       \n|                                                    |\n| Authors: Davydov M. - MSU, Physics dep.            |\n|          Isupov E.  - MSU, SINP                    |\n| Version 2.3    https://clas.sinp.msu.ru/~maksaska/ |\n ----------------------------------------------------" << endl;
+	cout << "| Welcome to event builder for Pi0p and pin channels| \n| of meson electroproduction reaction!              |       \n|                                                    |\n| Authors: Davydov M. - MSU, Physics dep.            |\n|          Isupov E.  - MSU, SINP                    |\n| Version 3.0    https://clas.sinp.msu.ru/~maksaska/ |\n ----------------------------------------------------" << endl;
 	
 	cout << endl;	
 
@@ -590,12 +596,14 @@ int main(int argc, char **argv)
 		cin >> i;
 	}
 
+	cin >> Q2_degree_extr;
+
 	for(int& i : Settings_mode) 
 	{
 		cin >> i;
 	}
 
-	string FileName = (Settings_mode[3] == 0 or Settings_mode[3] == 1) ? "pi0p.csv":"pin.csv";
+	string FileName = (Settings_mode[3] == 0 or Settings_mode[3] == 1) ? "pi0p_e.csv":"pin_e.csv";
 
 	c1 -> Divide(2,2);
 
@@ -608,14 +616,14 @@ int main(int argc, char **argv)
 	if(Settings[1] < 1.08 or Settings[1] > 2)
 	{
 		cout << "W_min is wrong!\nChoose the other one!\n" << endl;
-		cout << "Choose the kinematic area of (W, Q^2) values in the range W: 1.08 - 2.0 GeV , Q2: 0 - 5 GeV^2" << endl;
+		cout << "Choose the kinematic area of (W, Q^2) values in the range W: 1.08 - 2.0 GeV , Q2: 0 - 11 GeV^2" << endl;
 		return 0;
 	}
  
 	if(Settings[2] < 1.08 or Settings[2] > 2)
 	{
 		cout << "W_max is wrong!\nChoose the other one!\n" << endl;
-		cout << "Choose the kinematic area of (W, Q^2) values in the range W: 1.08 - 2.0 GeV , Q2: 0 - 5 GeV^2" << endl;
+		cout << "Choose the kinematic area of (W, Q^2) values in the range W: 1.08 - 2.0 GeV , Q2: 0 - 11 GeV^2" << endl;
 
 		if(Settings[2] < Settings[1])
 		{
@@ -630,17 +638,17 @@ int main(int argc, char **argv)
 		return 0;
 	}
  
-	if(Settings[3] < 0 or Settings[3] > 5)
+	if(Settings[3] < 0 or Settings[3] > 11)
 	{
 		cout << "Q2_min is wrong!\nChoose the other one!\n" << endl;
-		cout << "Choose the kinematic area of (W, Q^2) values in the range W: 1.08 - 2.0 GeV , Q2: 0 - 5 GeV^2" << endl;
+		cout << "Choose the kinematic area of (W, Q^2) values in the range W: 1.08 - 2.0 GeV , Q2: 0 - 11 GeV^2" << endl;
 		return 0;
 	}	
  
-	if(Settings[4] < 0 or Settings[4] > 5)
+	if(Settings[4] < 0 or Settings[4] > 11)
 	{
 		cout << "Q2_max is wrong!\nChoose the other one!\n" << endl;
-		cout << "Choose the kinematic area of (W, Q^2) values in the range W: 1.08 - 2.0 GeV , Q2: 0 - 5 GeV^2" << endl;
+		cout << "Choose the kinematic area of (W, Q^2) values in the range W: 1.08 - 2.0 GeV , Q2: 0 - 11 GeV^2" << endl;
 
 		if(Settings[4] < Settings[3])
 		{
@@ -679,7 +687,7 @@ int main(int argc, char **argv)
 	
 	cout << "Stand by...\n" << endl;	
 
-	Reeding(FileName,Biggy,VecShap);
+	Reading(FileName,Biggy,VecShap);
 
 	for(int yy = 1; yy <= Settings_mode[2]; yy++)
 	{
