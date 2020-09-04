@@ -9,5 +9,5 @@ Enter the information you are interested in in the following order: Beam energy 
 
 Example: 10.6 1.08 2 0 5 0 4 100000 1 1 2 0 1
 
-This input stands for 10.6 GeV beam energy(beam polarization is h = 0) with the kinematic range of W:[1.08, 2] GeV and Q^2: [0, 10] GeV^2 for 100000 events, that will be recorded in 1 file "pin_1.08_2_0_5_(1).lund". Additional 2d histogram (W, Q^2) will be created. Cross-section for random bin (W, Q^2) will be calculated with the help of linear interpolation. If the extrapolation is necessary the n factor will be used. Flat distribution over the entire kinematic range. Weights are recorded in .lund file.
+This input stands for 10.6 GeV beam energy(beam polarization is h = 0) with the kinematic range of W:[1.08, 2] GeV and Q^2: [0, 10] GeV^2 for 100000 events, that will be recorded in 1 file "pin_1.08_2_0_5_(1).lund". Additional 2d histogram (W, Q^2) will be created. Cross-section for random bin (W, Q^2) will be calculated with the help of linear interpolation. If the extrapolation is necessary the n = 4 factor will be used. Flat distribution over the entire kinematic range. Weights are recorded in .lund file.
 
