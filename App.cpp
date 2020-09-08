@@ -34,7 +34,8 @@ auto c1 = new TCanvas("c1", "Histogram", 1280, 1080);
 TH2* h1 = new TH2F("h1", "Histogram (W,Q^{2})_2d", 186, 1.08, 2, 440, 0, 10);
 TH1F* h3 = new TH1F("h3", "Histogram W", 186, 1.08, 2);
 TH1F* h4 = new TH1F("h4", "Histogram Q^{2}", 440, 0, 10);
-vector<double> Settings(5); vector<int> Settings_mode(5); int Q2_degree_extr(0), polarization(0), weight_mode(0);	
+vector<double> Settings(5); vector<int> Settings_mode(5); int Q2_degree_extr(0), polarization(0), weight_mode(0); 
+double length(0), Radius_c(0);	
 
 void Reading(string Path,vector<vector<double>>& V2, vector<string>& V3)
 {
@@ -429,7 +430,7 @@ double Quadratic(vector<vector<double>>& V, const double& W,  const double& Q2, 
 
 void All(vector<vector<double>>& V, const int& FileNumber)
 {
-	double W, Q2, theta, phi, S(0), P(0), Ep, Epi, p, mp(0.93827), mpi(0.13498), nu, ang1, ang2, weight(0);
+	double W, Q2, theta, phi, S(0), P(0), Ep, Epi, p, mp(0.93827), mpi(0.13498), nu, ang1, ang2, weight(0), z, x, y;
 	int v(0);
 
 	double E0, W_min_d, W_max_d, Q2_min_d, Q2_max_d; int N, Hist, FileNumberAll, decay_m;
@@ -489,6 +490,21 @@ void All(vector<vector<double>>& V, const int& FileNumber)
 		if((S/60) >= P) //
 		{
 			v++; 
+
+			if(length != 0)
+			{
+				z = 0.5*fRand(-length, length);
+			} else { z = 0;}
+
+			if(Radius_c != 0)
+			{
+				x = Radius_c*2; y = Radius_c*2;
+				while(x*x + y*y > Radius_c*Radius_c)
+				{
+					x = fRand(-Radius_c, Radius_c);
+					y = fRand(-Radius_c, Radius_c);
+				}
+			} else { x = 0; y = 0;}
 			
 			if(Hist == 1)
 			{
@@ -550,24 +566,24 @@ gamma2.SetPxPyPzE(-mpi*cos(ang2*M_PI/180)*sin(ang1*M_PI/180)/2 ,-mpi*sin(ang2*M_
 			if(decay_m == 1)
 			{
 	File << 4 << " " << 0 << " " << 0 << " " << 0 << " " << polarization << " " << 11 << " " << E0 << " " << 2212 << " " << 0 << " " << weight << endl;
-File << 0 << " " << 0 << " " << 0 << " " << 11 << " " << 0 << " " << 0 << " " <<  e.Px() << " " << e.Py() << " " << e.Pz() << " " << e.E() << " " << 0.0005 << " " << 0 << " " << 0 << " " << 0 << endl;
-File << 0 << " " << 0 << " " << 0 << " " << 2212 << " " << 0 << " " << 0 << " " <<  adron.Px() << " " << adron.Py() << " " << adron.Pz() << " " << adron.E() << " " << mp << " " << 0 << " " << 0 << " " << 0 << endl;
-File << 0 << " " << 0 << " " << 0 << " " << 22 << " " << 0 << " " << 0 << " " <<  gamma1.Px() << " " << gamma1.Py() << " " << gamma1.Pz() << " " << gamma1.E() << " " << 0 << " " << 0 << " " << 0 << " " << 0 << endl;
-File << 0 << " " << 0 << " " << 0 << " " << 22 << " " << 0 << " " << 0 << " " <<  gamma2.Px() << " " << gamma2.Py() << " " << gamma2.Pz() << " " << gamma2.E() << " " << 0 << " " << 0 << " " << 0 << " " << 0 << endl;
+File << 0 << " " << 0 << " " << 0 << " " << 11 << " " << 0 << " " << 0 << " " <<  e.Px() << " " << e.Py() << " " << e.Pz() << " " << e.E() << " " << 0.0005 << " " << x << " " << y << " " << z << endl;
+File << 0 << " " << 0 << " " << 0 << " " << 2212 << " " << 0 << " " << 0 << " " <<  adron.Px() << " " << adron.Py() << " " << adron.Pz() << " " << adron.E() << " " << mp << " " << x << " " << y << " " << z << endl;
+File << 0 << " " << 0 << " " << 0 << " " << 22 << " " << 0 << " " << 0 << " " <<  gamma1.Px() << " " << gamma1.Py() << " " << gamma1.Pz() << " " << gamma1.E() << " " << 0 << " " << x << " " << y << " " << z << endl;
+File << 0 << " " << 0 << " " << 0 << " " << 22 << " " << 0 << " " << 0 << " " <<  gamma2.Px() << " " << gamma2.Py() << " " << gamma2.Pz() << " " << gamma2.E() << " " << 0 << " " << x << " " << y << " " << z << endl;
 			} else if(decay_m == 0)
 			{
 	File << 3 << " " << 0 << " " << 0 << " " << 0 << " " << polarization << " " << 11 << " " << E0 << " " << 2212 << " " << 0 << " " << weight << endl;
 			
-File << 0 << " " << 0 << " " << 0 << " " << 11 << " " << 0 << " " << 0 << " " <<  e.Px() << " " << e.Py() << " " << e.Pz() << " " << e.E() << " " << 0.0005 << " " << 0 << " " << 0 << " " << 0 << endl;
-File << 0 << " " << 0 << " " << 0 << " " << 2212 << " " << 0 << " " << 0 << " " <<  adron.Px() << " " << adron.Py() << " " << adron.Pz() << " " << adron.E() << " " << mp << " " << 0 << " " << 0 << " " << 0 << endl;
-File << 0 << " " << 0 << " " << 0 << " " << 111 << " " << 0 << " " << 0 << " " <<  meson.Px() << " " << meson.Py() << " " << meson.Pz() << " " << meson.E() << " " << mpi << " " << 0 << " " << 0 << " " << 0 << endl;
+File << 0 << " " << 0 << " " << 0 << " " << 11 << " " << 0 << " " << 0 << " " <<  e.Px() << " " << e.Py() << " " << e.Pz() << " " << e.E() << " " << 0.0005 << " " << x << " " << y << " " << z << endl;
+File << 0 << " " << 0 << " " << 0 << " " << 2212 << " " << 0 << " " << 0 << " " <<  adron.Px() << " " << adron.Py() << " " << adron.Pz() << " " << adron.E() << " " << mp << " " << x << " " << y << " " << z << endl;
+File << 0 << " " << 0 << " " << 0 << " " << 111 << " " << 0 << " " << 0 << " " <<  meson.Px() << " " << meson.Py() << " " << meson.Pz() << " " << meson.E() << " " << mpi << " " << x << " " << y << " " << z << endl;
 			} else if(decay_m == 2)
 			{
 	File << 3 << " " << 0 << " " << 0 << " " << 0 << " " << polarization << " " << 11 << " " << E0 << " " << 2212 << " " << 0 << " " << weight << endl;
 			
-File << 0 << " " << 0 << " " << 0 << " " << 11 << " " << 0 << " " << 0 << " " <<  e.Px() << " " << e.Py() << " " << e.Pz() << " " << e.E() << " " << 0.0005 << " " << 0 << " " << 0 << " " << 0 << endl;
-File << 0 << " " << 0 << " " << 0 << " " << 2112 << " " << 0 << " " << 0 << " " <<  adron.Px() << " " << adron.Py() << " " << adron.Pz() << " " << adron.E() << " " << mp << " " << 0 << " " << 0 << " " << 0 << endl;
-File << 0 << " " << 0 << " " << 0 << " " << 211 << " " << 0 << " " << 0 << " " <<  meson.Px() << " " << meson.Py() << " " << meson.Pz() << " " << meson.E() << " " << mpi << " " << 0 << " " << 0 << " " << 0 << endl;
+File << 0 << " " << 0 << " " << 0 << " " << 11 << " " << 0 << " " << 0 << " " <<  e.Px() << " " << e.Py() << " " << e.Pz() << " " << e.E() << " " << 0.0005 << " " << x << " " << y << " " << z << endl;
+File << 0 << " " << 0 << " " << 0 << " " << 2112 << " " << 0 << " " << 0 << " " <<  adron.Px() << " " << adron.Py() << " " << adron.Pz() << " " << adron.E() << " " << mp << " " << x << " " << y << " " << z << endl;
+File << 0 << " " << 0 << " " << 0 << " " << 211 << " " << 0 << " " << 0 << " " <<  meson.Px() << " " << meson.Py() << " " << meson.Pz() << " " << meson.E() << " " << mpi << " " << x << " " << y << " " << z << endl;
 			}			
 		}
 	}
@@ -583,7 +599,7 @@ int main(int argc, char **argv)
 	vector<string> VecShap; 
 
 	cout << " ---------------------------------------------------- " << endl;
-	cout << "| Welcome to event builder for Pi0p and pin channels| \n| of meson electroproduction reaction!              |       \n|                                                    |\n| Authors: Davydov M. - MSU, Physics dep.            |\n|          Isupov E.  - MSU, SINP                    |\n| Version 3.0    https://clas.sinp.msu.ru/~maksaska/ |\n ----------------------------------------------------" << endl;
+	cout << "| Welcome to event builder for Pi0p and pin channels| \n| of meson electroproduction reaction!              |       \n|                                                    |\n| Authors: Davydov M. - MSU, Physics dep.            |\n|          Isupov E.  - MSU, SINP                    |\n| Version 4.1    https://clas.sinp.msu.ru/~maksaska/ |\n ----------------------------------------------------" << endl;
 	
 	cout << endl;	
 
@@ -595,6 +611,10 @@ int main(int argc, char **argv)
 	cin >> polarization;
 
 	cin >> Q2_degree_extr;
+
+	cin >> length;
+
+	cin >> Radius_c;
 
 	for(int& i : Settings_mode) 
 	{
