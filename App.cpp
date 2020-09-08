@@ -1,4 +1,4 @@
-#include <iostream> 
+#include <iostream> /*Git reminder*/
 #include <fstream>
 #include <vector>
 #include <string.h>
@@ -31,13 +31,12 @@ using namespace std;
 
 auto c1 = new TCanvas("c1", "Histogram", 1280, 1080); 
   
-TH2* h1 = new TH2F("h1", "Histogram (W,Q^{2})_2d", 186, 1.08, 2, 440, 0, 10);
+TH2* h1 = new TH2F("h1", "Histogram (W,Q^{2})_2d", 186, 1.075, 2.005, 202, -0.025, 5.025);
 TH1F* h3 = new TH1F("h3", "Histogram W", 186, 1.08, 2);
-TH1F* h4 = new TH1F("h4", "Histogram Q^{2}", 440, 0, 10);
-vector<double> Settings(5); vector<int> Settings_mode(5); int Q2_degree_extr(0), polarization(0), weight_mode(0); 
-double length(0), Radius_c(0);	
+TH1F* h4 = new TH1F("h4", "Histogram Q^{2}", 202, 0, 5);
+vector<double> Settings(5); vector<int> Settings_mode(5);	
 
-void Reading(string Path,vector<vector<double>>& V2, vector<string>& V3)
+void Reeding(string Path,vector<vector<double>>& V2, vector<string>& V3)
 {
 	string lane, line, word; stringstream ss;
 	ifstream File;
@@ -217,14 +216,14 @@ double Sections(vector<double>& info,const int& t, double& W, double& Q2,const i
 	double theta(t*M_PI/180), mp(0.93827), mpi(0.13498), nu; //radians 
 	vector<complex<double>> Mp, Mm, Ep, Em, Lp, Lm; complex<double> Value; double Re, Im, eps, S;
 	complex<double> F1(0,0), F2(0,0), F3(0,0), F4(0,0), F5(0,0), F6(0,0);
-	double Rt, Rl, Rtl, Rtt, Rtl2, Rtt2;
+	double Rt, Rl, Rtl, Rtt;
 
 	if(Settings_mode[3] == 2)
 	{
 		mpi = 0.13957; mp = 0.93957;
 	} 
 
-	double C,CC, L(0.14817); 
+	double C,CC, L(0.14817); // 0.518 
 
 	double Epi = (W*W + mpi*mpi - mp*mp)/(2*W);
 	double Ppi = sqrt(Epi*Epi - mpi*mpi);
@@ -257,17 +256,11 @@ double Sections(vector<double>& info,const int& t, double& W, double& Q2,const i
 		Rtl = pow(L, 2)*(-sin(theta)*real((conj(F2) + conj(F3) + cos(theta)*conj(F4))*F5 + (conj(F1) + conj(F4) + cos(theta)*conj(F3))*F6));
 	Rtt = pow(L, 2)*pow(sin(theta), 2)*(0.5*(abs(F3)*abs(F3) + abs(F4)*abs(F4)) + real(conj(F1)*F4 + conj(F2)*F3 + cos(theta)*conj(F3)*F4));
 
-		Rtl2 = pow(L, 2)*(-sin(theta)*imag((conj(F2) + conj(F3) + cos(theta)*conj(F4))*F5 + (conj(F1) + conj(F4) + cos(theta)*conj(F3))*F6));
+		//Rtl2 = pow(L, 2)*(-sin(theta)*imag((conj(F2) + conj(F3) + cos(theta)*conj(F4))*F5 + (conj(F1) + conj(F4) + cos(theta)*conj(F3))*F6));
 
 	eps = 1/(1 + 2*(nu*nu + Q2)/(4*(E0 - nu)*E0 - Q2));
 
-	if(Q2 > 5)
-	{
-	S = pow(sqrt(5), Q2_degree_extr)*(C*Rt + eps*C*Rl*CC*CC + CC*sqrt(2*eps*(1 + eps))*Rtl*cos(phi*M_PI/180)*C + eps*C*Rtt*cos(phi*M_PI/90) + polarization*C*CC*sqrt(2*eps*(1 - eps))*Rtl2*sin(phi*M_PI/180))/pow(sqrt(Q2), Q2_degree_extr);
-	} else 
-	{
-		S = C*Rt + eps*C*Rl*CC*CC + CC*sqrt(2*eps*(1 + eps))*Rtl*cos(phi*M_PI/180)*C + eps*C*Rtt*cos(phi*M_PI/90) + polarization*C*CC*sqrt(2*eps*(1 - eps))*Rtl2*sin(phi*M_PI/180);
-	}
+	S = C*Rt + eps*C*Rl*CC*CC + CC*sqrt(2*eps*(1 + eps))*Rtl*cos(phi*M_PI/180)*C + eps*C*Rtt*cos(phi*M_PI/90);
 
 	Mp.clear(); Mm.clear(); Ep.clear(); Em.clear(); Lp.clear(); Lm.clear(); 
 
@@ -277,9 +270,15 @@ double Sections(vector<double>& info,const int& t, double& W, double& Q2,const i
 vector<double> Coefficients_lin(const double& x1, const double& y1, const double& x2, const double& y2)
 {
 	vector<double> Abc(2);
+	TMatrixD X(2, 2), Y(2, 1), R(2, 1);
 
-	Abc[0] = (y1 - y2)/(x1 - x2); 
-	Abc[1] = (x1*y2 - y1*x2)/(x1 - x2); 
+	TMatrixDRow(X, 0)[0] = x1; TMatrixDRow(X, 0)[1] = 1; TMatrixDRow(Y, 0)[0] = y1;
+	TMatrixDRow(X, 1)[0] = x2; TMatrixDRow(X, 1)[1] = 1; TMatrixDRow(Y, 1)[0] = y2;
+
+	X.Invert();
+	R = X*Y;
+
+	Abc[0] = TMatrixDRow(R, 0)[0]; Abc[1] = TMatrixDRow(R, 1)[0]; 
 
 	return Abc;
 }
@@ -364,13 +363,17 @@ double Section_transition(vector<vector<double>>& V, double& W, double& Q2, cons
 
 vector<double> Coefficients(const double& x1, const double& y1, const double& x2, const double& y2, const double& x3, const double& y3)
 {
-	vector<double> Abc(3); double det;
+	vector<double> Abc(3);
+	TMatrixD X(3, 3), Y(3, 1), R(3, 1);
 
-	det = (x2 - x3)*(x1*x1 - x1*(x2 + x3) + x2*x3);
+	TMatrixDRow(X, 0)[0] = x1*x1; TMatrixDRow(X, 0)[1] = x1; TMatrixDRow(X, 0)[2] = 1; TMatrixDRow(Y, 0)[0] = y1;
+	TMatrixDRow(X, 1)[0] = x2*x2; TMatrixDRow(X, 1)[1] = x2; TMatrixDRow(X, 1)[2] = 1; TMatrixDRow(Y, 1)[0] = y2;
+	TMatrixDRow(X, 2)[0] = x3*x3; TMatrixDRow(X, 2)[1] = x3; TMatrixDRow(X, 2)[2] = 1; TMatrixDRow(Y, 2)[0] = y3;
 
-	Abc[0] = (y1*(x2 - x3) + y2*(x3 - x1) + y3*(x1 - x2))/det; 
-	Abc[1] = (y1*(x3*x3 - x2*x2) + y2*(x1*x1 - x3*x3) + y3*(x2*x2 - x1*x1))/det;  
-	Abc[2] = (y1*x2*x3*(x2 - x3) + y2*x1*x3*(x3 - x1) + y3*x1*x2*(x1 - x2))/det; 
+	X.Invert();
+	R = X*Y;
+
+	Abc[0] = TMatrixDRow(R, 0)[0]; Abc[1] = TMatrixDRow(R, 1)[0]; Abc[2] = TMatrixDRow(R, 2)[0];
 
 	return Abc;
 }
@@ -385,9 +388,9 @@ double Quadratic(vector<vector<double>>& V, const double& W,  const double& Q2, 
 	Q2_1 = floor(Q2*20)/20;
 	Q2_2 = ceil(Q2*20)/20;
 
-	if(Q2_2 == 11)
+	if(Q2_2 == 5)
 	{
-		Q2_3 = 11;
+		Q2_3 = 5;
 		Q2_2 -= 0.05;		
 		Q2_1 -= 0.05;
 	} else {Q2_3 = Q2_2 + 0.05;}
@@ -430,7 +433,7 @@ double Quadratic(vector<vector<double>>& V, const double& W,  const double& Q2, 
 
 void All(vector<vector<double>>& V, const int& FileNumber)
 {
-	double W, Q2, theta, phi, S(0), P(0), Ep, Epi, p, mp(0.93827), mpi(0.13498), nu, ang1, ang2, weight(0), z, x, y;
+	double W, Q2, theta, phi, S(0), P, Ep, Epi, p, mp(0.93827), mpi(0.13498), nu, ang1, ang2;
 	int v(0);
 
 	double E0, W_min_d, W_max_d, Q2_min_d, Q2_max_d; int N, Hist, FileNumberAll, decay_m;
@@ -447,13 +450,16 @@ void All(vector<vector<double>>& V, const int& FileNumber)
 
 	char FileName[100];
 
-	if(Settings_mode[3] == 1 or Settings_mode[3] == 0)
+	if(Settings_mode[3] == 0 )
 	{
 		sprintf(FileName,"pi0p_W_%g_%g_Q2_%g_%g_(%i).lund", W_min_d, W_max_d, Q2_min_d, Q2_max_d, FileNumber);
-	} else 
+	} else if(Settings_mode[3] == 2)
 	{
 		sprintf(FileName,"pin_W_%g_%g_Q2_%g_%g_(%i).lund", W_min_d, W_max_d, Q2_min_d, Q2_max_d, FileNumber);
 		mpi = 0.13957; mp = 0.93957;
+	} else if(Settings_mode[3] == 1)
+	{
+		sprintf(FileName,"pi0p_2g_W_%g_%g_Q2_%g_%g_(%i).lund", W_min_d, W_max_d, Q2_min_d, Q2_max_d, FileNumber);
 	}	
 
 	cout << "\n\tThe name of output file will be " << FileName << endl;
@@ -479,32 +485,11 @@ void All(vector<vector<double>>& V, const int& FileNumber)
 			S = Quadratic(V, W, Q2, theta, phi, E0);
 		}
 
-		if(weight_mode == 0)
-		{
-			P = 0.00000001*(rand() % 100000000); 
-		} else 
-		{
-			weight = S;
-		}
+		P = 0.00000001*(rand() % 100000000); 
 
 		if((S/60) >= P) //
 		{
 			v++; 
-
-			if(length != 0)
-			{
-				z = 0.5*fRand(-length, length);
-			} else { z = 0;}
-
-			if(Radius_c != 0)
-			{
-				x = Radius_c*2; y = Radius_c*2;
-				while(x*x + y*y > Radius_c*Radius_c)
-				{
-					x = fRand(-Radius_c, Radius_c);
-					y = fRand(-Radius_c, Radius_c);
-				}
-			} else { x = 0; y = 0;}
 			
 			if(Hist == 1)
 			{
@@ -527,8 +512,8 @@ void All(vector<vector<double>>& V, const int& FileNumber)
 			ang1 = fRand(0, 180); 
 			ang2 = fRand(0, 360);
 			
-	meson.SetPxPyPzE(p*cos(phi*M_PI/180)*sin(theta*M_PI/180) ,p*sin(phi*M_PI/180)*sin(theta*M_PI/180) ,p*cos(theta*M_PI/180) , Epi);
 	adron.SetPxPyPzE(-p*cos(phi*M_PI/180)*sin(theta*M_PI/180) ,-p*sin(phi*M_PI/180)*sin(theta*M_PI/180) ,-p*cos(theta*M_PI/180) , Ep);
+	meson.SetPxPyPzE(p*cos(phi*M_PI/180)*sin(theta*M_PI/180) ,p*sin(phi*M_PI/180)*sin(theta*M_PI/180) ,p*cos(theta*M_PI/180) , Epi);
 	gamma1.SetPxPyPzE(mpi*cos(ang2*M_PI/180)*sin(ang1*M_PI/180)/2 ,mpi*sin(ang2*M_PI/180)*sin(ang1*M_PI/180)/2 ,mpi*cos(ang1*M_PI/180)/2 ,mpi/2);
 gamma2.SetPxPyPzE(-mpi*cos(ang2*M_PI/180)*sin(ang1*M_PI/180)/2 ,-mpi*sin(ang2*M_PI/180)*sin(ang1*M_PI/180)/2 ,-mpi*cos(ang1*M_PI/180)/2 ,mpi/2);
 
@@ -565,25 +550,25 @@ gamma2.SetPxPyPzE(-mpi*cos(ang2*M_PI/180)*sin(ang1*M_PI/180)/2 ,-mpi*sin(ang2*M_
 
 			if(decay_m == 1)
 			{
-	File << 4 << " " << 0 << " " << 0 << " " << 0 << " " << polarization << " " << 11 << " " << E0 << " " << 2212 << " " << 0 << " " << weight << endl;
-File << 0 << " " << 0 << " " << 0 << " " << 11 << " " << 0 << " " << 0 << " " <<  e.Px() << " " << e.Py() << " " << e.Pz() << " " << e.E() << " " << 0.0005 << " " << x << " " << y << " " << z << endl;
-File << 0 << " " << 0 << " " << 0 << " " << 2212 << " " << 0 << " " << 0 << " " <<  adron.Px() << " " << adron.Py() << " " << adron.Pz() << " " << adron.E() << " " << mp << " " << x << " " << y << " " << z << endl;
-File << 0 << " " << 0 << " " << 0 << " " << 22 << " " << 0 << " " << 0 << " " <<  gamma1.Px() << " " << gamma1.Py() << " " << gamma1.Pz() << " " << gamma1.E() << " " << 0 << " " << x << " " << y << " " << z << endl;
-File << 0 << " " << 0 << " " << 0 << " " << 22 << " " << 0 << " " << 0 << " " <<  gamma2.Px() << " " << gamma2.Py() << " " << gamma2.Pz() << " " << gamma2.E() << " " << 0 << " " << x << " " << y << " " << z << endl;
+	File << 4 << " " << 0 << " " << 0 << " " << 0 << " " << 0 << " " << 11 << " " << E0 << " " << 2212 << " " << 0 << " " << 0 << endl;
+File << 0 << " " << 0 << " " << 0 << " " << 11 << " " << 0 << " " << 0 << " " <<  e.Px() << " " << e.Py() << " " << e.Pz() << " " << e.E() << " " << 0.0005 << " " << 0 << " " << 0 << " " << 0 << endl;
+File << 0 << " " << 0 << " " << 0 << " " << 2212 << " " << 0 << " " << 0 << " " <<  adron.Px() << " " << adron.Py() << " " << adron.Pz() << " " << adron.E() << " " << mp << " " << 0 << " " << 0 << " " << 0 << endl;
+File << 0 << " " << 0 << " " << 0 << " " << 22 << " " << 0 << " " << 0 << " " <<  gamma1.Px() << " " << gamma1.Py() << " " << gamma1.Pz() << " " << gamma1.E() << " " << 0 << " " << 0 << " " << 0 << " " << 0 << endl;
+File << 0 << " " << 0 << " " << 0 << " " << 22 << " " << 0 << " " << 0 << " " <<  gamma2.Px() << " " << gamma2.Py() << " " << gamma2.Pz() << " " << gamma2.E() << " " << 0 << " " << 0 << " " << 0 << " " << 0 << endl;
 			} else if(decay_m == 0)
 			{
-	File << 3 << " " << 0 << " " << 0 << " " << 0 << " " << polarization << " " << 11 << " " << E0 << " " << 2212 << " " << 0 << " " << weight << endl;
+	File << 3 << " " << 0 << " " << 0 << " " << 0 << " " << 0 << " " << 11 << " " << E0 << " " << 2212 << " " << 0 << " " << 0 << endl;
 			
-File << 0 << " " << 0 << " " << 0 << " " << 11 << " " << 0 << " " << 0 << " " <<  e.Px() << " " << e.Py() << " " << e.Pz() << " " << e.E() << " " << 0.0005 << " " << x << " " << y << " " << z << endl;
-File << 0 << " " << 0 << " " << 0 << " " << 2212 << " " << 0 << " " << 0 << " " <<  adron.Px() << " " << adron.Py() << " " << adron.Pz() << " " << adron.E() << " " << mp << " " << x << " " << y << " " << z << endl;
-File << 0 << " " << 0 << " " << 0 << " " << 111 << " " << 0 << " " << 0 << " " <<  meson.Px() << " " << meson.Py() << " " << meson.Pz() << " " << meson.E() << " " << mpi << " " << x << " " << y << " " << z << endl;
+File << 0 << " " << 0 << " " << 0 << " " << 11 << " " << 0 << " " << 0 << " " <<  e.Px() << " " << e.Py() << " " << e.Pz() << " " << e.E() << " " << 0.0005 << " " << 0 << " " << 0 << " " << 0 << endl;
+File << 0 << " " << 0 << " " << 0 << " " << 2212 << " " << 0 << " " << 0 << " " <<  adron.Px() << " " << adron.Py() << " " << adron.Pz() << " " << adron.E() << " " << mp << " " << 0 << " " << 0 << " " << 0 << endl;
+File << 0 << " " << 0 << " " << 0 << " " << 111 << " " << 0 << " " << 0 << " " <<  meson.Px() << " " << meson.Py() << " " << meson.Pz() << " " << meson.E() << " " << mpi << " " << 0 << " " << 0 << " " << 0 << endl;
 			} else if(decay_m == 2)
 			{
-	File << 3 << " " << 0 << " " << 0 << " " << 0 << " " << polarization << " " << 11 << " " << E0 << " " << 2212 << " " << 0 << " " << weight << endl;
+	File << 3 << " " << 0 << " " << 0 << " " << 0 << " " << 0 << " " << 11 << " " << E0 << " " << 2212 << " " << 0 << " " << 0 << endl;
 			
-File << 0 << " " << 0 << " " << 0 << " " << 11 << " " << 0 << " " << 0 << " " <<  e.Px() << " " << e.Py() << " " << e.Pz() << " " << e.E() << " " << 0.0005 << " " << x << " " << y << " " << z << endl;
-File << 0 << " " << 0 << " " << 0 << " " << 2112 << " " << 0 << " " << 0 << " " <<  adron.Px() << " " << adron.Py() << " " << adron.Pz() << " " << adron.E() << " " << mp << " " << x << " " << y << " " << z << endl;
-File << 0 << " " << 0 << " " << 0 << " " << 211 << " " << 0 << " " << 0 << " " <<  meson.Px() << " " << meson.Py() << " " << meson.Pz() << " " << meson.E() << " " << mpi << " " << x << " " << y << " " << z << endl;
+File << 0 << " " << 0 << " " << 0 << " " << 11 << " " << 0 << " " << 0 << " " <<  e.Px() << " " << e.Py() << " " << e.Pz() << " " << e.E() << " " << 0.0005 << " " << 0 << " " << 0 << " " << 0 << endl;
+File << 0 << " " << 0 << " " << 0 << " " << 2112 << " " << 0 << " " << 0 << " " <<  adron.Px() << " " << adron.Py() << " " << adron.Pz() << " " << adron.E() << " " << mp << " " << 0 << " " << 0 << " " << 0 << endl;
+File << 0 << " " << 0 << " " << 0 << " " << 211 << " " << 0 << " " << 0 << " " <<  meson.Px() << " " << meson.Py() << " " << meson.Pz() << " " << meson.E() << " " << mpi << " " << 0 << " " << 0 << " " << 0 << endl;
 			}			
 		}
 	}
@@ -599,7 +584,7 @@ int main(int argc, char **argv)
 	vector<string> VecShap; 
 
 	cout << " ---------------------------------------------------- " << endl;
-	cout << "| Welcome to event builder for Pi0p and pin channels| \n| of meson electroproduction reaction!              |       \n|                                                    |\n| Authors: Davydov M. - MSU, Physics dep.            |\n|          Isupov E.  - MSU, SINP                    |\n| Version 4.1    https://clas.sinp.msu.ru/~maksaska/ |\n ----------------------------------------------------" << endl;
+	cout << "| Welcome to event builder for Pi0p and Pi+n channels| \n| of meson electroproduction reaction!               |       \n|                                                    |\n| Authors: Davydov M. - MSU, Physics dep.            |\n|          Isupov E.  - MSU, SINP                    |\n| Version 2.3    https://clas.sinp.msu.ru/~maksaska/ |\n ----------------------------------------------------" << endl;
 	
 	cout << endl;	
 
@@ -608,22 +593,12 @@ int main(int argc, char **argv)
 		cin >> i;
 	}
 
-	cin >> polarization;
-
-	cin >> Q2_degree_extr;
-
-	cin >> length;
-
-	cin >> Radius_c;
-
 	for(int& i : Settings_mode) 
 	{
 		cin >> i;
 	}
 
-	cin >> weight_mode;
-
-	string FileName = (Settings_mode[3] == 0 or Settings_mode[3] == 1) ? "pi0p_e.csv":"pin_e.csv";
+	string FileName = (Settings_mode[3] == 0 or Settings_mode[3] == 1) ? "pi0p.csv":"pin.csv";
 
 	c1 -> Divide(2,2);
 
@@ -636,14 +611,14 @@ int main(int argc, char **argv)
 	if(Settings[1] < 1.08 or Settings[1] > 2)
 	{
 		cout << "W_min is wrong!\nChoose the other one!\n" << endl;
-		cout << "Choose the kinematic area of (W, Q^2) values in the range W: 1.08 - 2.0 GeV , Q2: 0 - 10 GeV^2" << endl;
+		cout << "Choose the kinematic area of (W, Q^2) values in the range W: 1.08 - 2.0 GeV , Q2: 0 - 5 GeV^2" << endl;
 		return 0;
 	}
  
 	if(Settings[2] < 1.08 or Settings[2] > 2)
 	{
 		cout << "W_max is wrong!\nChoose the other one!\n" << endl;
-		cout << "Choose the kinematic area of (W, Q^2) values in the range W: 1.08 - 2.0 GeV , Q2: 0 - 10 GeV^2" << endl;
+		cout << "Choose the kinematic area of (W, Q^2) values in the range W: 1.08 - 2.0 GeV , Q2: 0 - 5 GeV^2" << endl;
 
 		if(Settings[2] < Settings[1])
 		{
@@ -658,17 +633,17 @@ int main(int argc, char **argv)
 		return 0;
 	}
  
-	if(Settings[3] < 0 or Settings[3] > 10)
+	if(Settings[3] < 0 or Settings[3] > 5)
 	{
 		cout << "Q2_min is wrong!\nChoose the other one!\n" << endl;
-		cout << "Choose the kinematic area of (W, Q^2) values in the range W: 1.08 - 2.0 GeV , Q2: 0 - 10 GeV^2" << endl;
+		cout << "Choose the kinematic area of (W, Q^2) values in the range W: 1.08 - 2.0 GeV , Q2: 0 - 5 GeV^2" << endl;
 		return 0;
 	}	
  
-	if(Settings[4] < 0 or Settings[4] > 10)
+	if(Settings[4] < 0 or Settings[4] > 5)
 	{
 		cout << "Q2_max is wrong!\nChoose the other one!\n" << endl;
-		cout << "Choose the kinematic area of (W, Q^2) values in the range W: 1.08 - 2.0 GeV , Q2: 0 - 10 GeV^2" << endl;
+		cout << "Choose the kinematic area of (W, Q^2) values in the range W: 1.08 - 2.0 GeV , Q2: 0 - 5 GeV^2" << endl;
 
 		if(Settings[4] < Settings[3])
 		{
@@ -707,7 +682,7 @@ int main(int argc, char **argv)
 	
 	cout << "Stand by...\n" << endl;	
 
-	Reading(FileName,Biggy,VecShap);
+	Reeding(FileName,Biggy,VecShap);
 
 	for(int yy = 1; yy <= Settings_mode[2]; yy++)
 	{
@@ -728,11 +703,7 @@ int main(int argc, char **argv)
 		c1->cd(4);
 		h4->Draw();
 
-		char FileName1[100];
-
-		sprintf(FileName1,"Histograms_reg%i_degree_%i_W_%g_%g_Q2_%g_%g.jpeg", Settings_mode[3], Q2_degree_extr, Settings[1], Settings[2], Settings[3], Settings[4]);
-
-		c1 -> Print(FileName1);
+		c1 -> Print("Histograms.jpeg");
 	}
 
 	Biggy.clear(); 
