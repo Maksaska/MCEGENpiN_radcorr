@@ -3,27 +3,13 @@
 #include <vector>
 #include <string.h>
 #include <sstream>
-#include <iomanip>
 #define _USE_MATH_DEFINES
 #include <math.h>
-#include <stdio.h>
 #include "TApplication.h"
-#include "TRint.h"
-#include "TText.h"
-#include "TGraph.h"
-#include "TMultiGraph.h"
-#include "TGraphErrors.h"
 #include "TCanvas.h"
-#include "TStyle.h"
-#include "TAxis.h"
-#include "TSpline.h"
 #include "TH1F.h"
 #include "TH2F.h"
-#include "TPad.h"
-#include "TLegend.h"
 #include "TLorentzVector.h"
-#include "TFrame.h"
-#include "TMatrixD.h"
 #include <complex>
 #include <ctime>
 
@@ -34,8 +20,9 @@ auto c1 = new TCanvas("c1", "Histogram", 1280, 1080);
 TH2* h1 = new TH2F("h1", "Histogram (W,Q^{2})_2d", 186, 1.08, 2, 440, 0, 10);
 TH1F* h3 = new TH1F("h3", "Histogram W", 186, 1.08, 2);
 TH1F* h4 = new TH1F("h4", "Histogram Q^{2}", 440, 0, 10);
-vector<double> Settings(5); vector<int> Settings_mode(5); int Q2_degree_extr(0), polarization(0), weight_mode(0); 
-double length(0), Radius_c(0);	
+
+vector<double> Settings(5); vector<int> Settings_mode(5); int polarization(0), weight_mode(0); 
+double length(0), Radius_c(0), Q2_degree_extr(0);	
 
 void Reading(string Path,vector<vector<double>>& V2, vector<string>& V3)
 {
@@ -598,8 +585,8 @@ int main(int argc, char **argv)
 	vector<vector<double>> Biggy; 
 	vector<string> VecShap; 
 
-	cout << " ---------------------------------------------------- " << endl;
-	cout << "| Welcome to event builder for Pi0p and pin channels| \n| of meson electroproduction reaction!              |       \n|                                                    |\n| Authors: Davydov M. - MSU, Physics dep.            |\n|          Isupov E.  - MSU, SINP                    |\n| Version 4.1    https://clas.sinp.msu.ru/~maksaska/ |\n ----------------------------------------------------" << endl;
+	cout << " ------------------------------------------------------------------- " << endl;
+	cout << "| Welcome to event builder for Pi0p and pin channels of meson       | \n| electroproduction reaction!                                       |       \n|                                                                   |\n|     Authors: Davydov M. - MSU, Physics dep.                       |\n|              Isupov E.  - MSU, SINP                               |\n|                                                   Version 4.2     |\n| https://github.com/Maksaska/pi0p-pin-generator/tree/Extrapolation |\n ------------------------------------------------------------------- " << endl;
 	
 	cout << endl;	
 
@@ -694,7 +681,7 @@ int main(int argc, char **argv)
 	cout << "Total amount of files: " << Settings_mode[2] << "\nHistogram need: ";
 	if(Settings_mode[1] == 1){cout << "Yes" << endl;} else {cout << "No" << endl;}
 	cout << "Interpolation mode: ";
-	if(Settings_mode[4] == 1){cout << "Quadratic" << endl;} else {cout << "Linear" << endl;}
+	if(Settings_mode[4] == 1){cout << "Biquadratic" << endl;} else {cout << "Bilinear" << endl;}
 	if(Settings_mode[3] == 1 or Settings_mode[3] == 0)
 	{
 		cout << "Channel: pi0p" << endl;
@@ -730,7 +717,7 @@ int main(int argc, char **argv)
 
 		char FileName1[100];
 
-		sprintf(FileName1,"Histograms_reg%i_degree_%i_W_%g_%g_Q2_%g_%g.jpeg", Settings_mode[3], Q2_degree_extr, Settings[1], Settings[2], Settings[3], Settings[4]);
+		sprintf(FileName1,"Histograms_reg%i_degree_%g_W_%g_%g_Q2_%g_%g.jpeg", Settings_mode[3], Q2_degree_extr, Settings[1], Settings[2], Settings[3], Settings[4]);
 
 		c1 -> Print(FileName1);
 	}
