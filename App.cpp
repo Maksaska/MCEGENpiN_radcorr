@@ -240,20 +240,20 @@ double Sections(vector<double>& info,const int& t, double& W, double& Q2,const i
 		F6 = F6 + (l*Lm[l] - (l+1)*Lp[l])*P(1, l, theta); }
 		
 		Rt = pow(L, 2)*(abs(F1)*abs(F1) + abs(F2)*abs(F2) + 0.5*pow(sin(theta), 2)*(abs(F3)*abs(F3) + abs(F4)*abs(F4)) - real(2*cos(theta)*conj(F1)*F2 - pow(sin(theta),2)*(conj(F1)*F4 + conj(F2)*F3 + cos(theta)*conj(F3)*F4)));
-		Rl = pow(L, 2)*(abs(F5)*abs(F5) + abs(F6)*abs(F6) + 2*cos(theta)*real(conj(F5)*F6));
-		Rtl = pow(L, 2)*(-sin(theta)*real((conj(F2) + conj(F3) + cos(theta)*conj(F4))*F5 + (conj(F1) + conj(F4) + cos(theta)*conj(F3))*F6));
+		Rl = CC*CC*pow(L, 2)*(abs(F5)*abs(F5) + abs(F6)*abs(F6) + 2*cos(theta)*real(conj(F5)*F6));
+		Rtl = CC*pow(L, 2)*(-sin(theta)*real((conj(F2) + conj(F3) + cos(theta)*conj(F4))*F5 + (conj(F1) + conj(F4) + cos(theta)*conj(F3))*F6));
 	Rtt = pow(L, 2)*pow(sin(theta), 2)*(0.5*(abs(F3)*abs(F3) + abs(F4)*abs(F4)) + real(conj(F1)*F4 + conj(F2)*F3 + cos(theta)*conj(F3)*F4));
 
-		Rtl2 = pow(L, 2)*(-sin(theta)*imag((conj(F2) + conj(F3) + cos(theta)*conj(F4))*F5 + (conj(F1) + conj(F4) + cos(theta)*conj(F3))*F6));
+		Rtl2 = CC*pow(L, 2)*(-sin(theta)*imag((conj(F2) + conj(F3) + cos(theta)*conj(F4))*F5 + (conj(F1) + conj(F4) + cos(theta)*conj(F3))*F6));
 
 	eps = 1/(1 + 2*(nu*nu + Q2)/(4*(E0 - nu)*E0 - Q2));
 
 	if(Q2 > 5)
 	{
-	S = pow(sqrt(5), Q2_degree_extr)*(C*Rt + eps*C*Rl*CC*CC + CC*sqrt(2*eps*(1 + eps))*Rtl*cos(phi*M_PI/180)*C + eps*C*Rtt*cos(phi*M_PI/90) + polarization*C*CC*sqrt(2*eps*(1 - eps))*Rtl2*sin(phi*M_PI/180))/pow(sqrt(Q2), Q2_degree_extr);
+	S = pow(sqrt(5), Q2_degree_extr)*(C*Rt + eps*C*Rl + sqrt(2*eps*(1 + eps))*Rtl*cos(phi*M_PI/180)*C + eps*C*Rtt*cos(phi*M_PI/90) + polarization*C*sqrt(2*eps*(1 - eps))*Rtl2*sin(phi*M_PI/180))/pow(sqrt(Q2), Q2_degree_extr);
 	} else 
 	{
-		S = C*Rt + eps*C*Rl*CC*CC + CC*sqrt(2*eps*(1 + eps))*Rtl*cos(phi*M_PI/180)*C + eps*C*Rtt*cos(phi*M_PI/90) + polarization*C*CC*sqrt(2*eps*(1 - eps))*Rtl2*sin(phi*M_PI/180);
+		S = C*Rt + eps*C*Rl + sqrt(2*eps*(1 + eps))*Rtl*cos(phi*M_PI/180)*C + eps*C*Rtt*cos(phi*M_PI/90) + polarization*C*sqrt(2*eps*(1 - eps))*Rtl2*sin(phi*M_PI/180);
 	}
 
 	Mp.clear(); Mm.clear(); Ep.clear(); Em.clear(); Lp.clear(); Lm.clear(); 
