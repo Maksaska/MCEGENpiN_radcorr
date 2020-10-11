@@ -24,6 +24,8 @@ TH1F* h4 = new TH1F("h4", "Histogram Q^{2}", 440, 0, 10);
 vector<double> Settings(5); vector<int> Settings_mode(5); int polarization(0), weight_mode(0); 
 double length(0), Radius_c(0), Q2_degree_extr(0);	
 
+
+
 void Reading(string Path,vector<vector<double>>& V2, vector<string>& V3)
 {
 	string lane, line, word; stringstream ss;
@@ -449,7 +451,7 @@ void All(vector<vector<double>>& V, const int& FileNumber)
 
 	File.open(FileName);
 
-	srand( time( 0 ) ); 
+ 
 
 	while(v < N)
 	{
@@ -695,6 +697,8 @@ int main(int argc, char **argv)
 	cout << "Stand by...\n" << endl;	
 
 	Reading(FileName,Biggy,VecShap);
+
+	srand(time(NULL));
 
 	for(int yy = 1; yy <= Settings_mode[2]; yy++)
 	{
