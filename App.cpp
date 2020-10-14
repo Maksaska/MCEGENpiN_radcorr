@@ -204,7 +204,7 @@ double P(const int& der,const int& n, double& theta) //legendre polynomials P(co
 double Sections(vector<double>& info,const int& t, double& W, double& Q2,const int& phi,const double& E0)
 {
 	double theta(t*M_PI/180), mp(0.93827), mpi(0.13498), nu; //radians 
-	vector<complex<double>> Mp, Mm, Ep, Em, Lp, Lm; complex<double> Value; double Re, Im, eps, S;
+	vector<complex<double>> Mp, Mm, Ep, Em, Lp, Lm; complex<double> Value; double Re, Im, eps, S, Gamma_flux(0);
 	complex<double> F1(0,0), F2(0,0), F3(0,0), F4(0,0), F5(0,0), F6(0,0);
 	double Rt, Rl, Rtl, Rtt, Rtl2, Rtt2;
 
@@ -257,6 +257,10 @@ double Sections(vector<double>& info,const int& t, double& W, double& Q2,const i
 	{
 		S = C*Rt + eps*C*Rl + sqrt(2*eps*(1 + eps))*Rtl*cos(phi*M_PI/180)*C + eps*C*Rtt*cos(phi*M_PI/90) + polarization*C*sqrt(2*eps*(1 - eps))*Rtl2*sin(phi*M_PI/180);
 	}
+
+	Gamma_flux = W*(W*W - mp*mp)/(137*4*M_PI*mp*mp*E0*E0*(1 - eps)*Q2);
+
+	S = Gamma_flux*S;
 
 	Mp.clear(); Mm.clear(); Ep.clear(); Em.clear(); Lp.clear(); Lm.clear(); 
 
@@ -468,12 +472,13 @@ void All(vector<vector<double>>& V, const int& FileNumber)
 			S = Quadratic(V, W, Q2, theta, phi, E0);
 		}
 
+
 		if(weight_mode == 0)
 		{
-			P = 0.00000001*(rand() % 100000000); 
+			P = 0.00000000001*(rand() % 100000000000); 
 		} else 
 		{
-			weight = S;
+			weight = S; P = 0;
 		}
 
 		if((S/60) >= P) //
