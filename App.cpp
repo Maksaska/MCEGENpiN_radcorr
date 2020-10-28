@@ -90,6 +90,12 @@ void Reading(string Path,vector<vector<double>>& V2, vector<string>& V3)
 	File.close();
 }
 
+double fRand(const double& fMin, const double& fMax)
+{
+    double f = (double)rand() / RAND_MAX;
+    return fMin + f * (fMax - fMin);
+}
+
 void PrintVectorS(vector<string>& V3)
 {
 	for (vector<string>::iterator it=V3.begin();it!=V3.end();it++)
@@ -97,6 +103,17 @@ void PrintVectorS(vector<string>& V3)
 		cout << *it << "\t\t";
 	}
 	cout << endl;
+}
+
+double mmin(double& x)
+{
+	return (x < 1) ? x:1;
+}
+
+bool attempt(double& p)
+{
+	double index = fRand(0, 1);
+	return (index < p) ? true : false;
 }
 
 void Print(vector<complex<double>>& V3)
@@ -140,12 +157,6 @@ void PrintBiggy(const vector<vector<double>>& V)
 	}
 	
 	cout << "Col-vo strok: " << y << endl;
-}
-
-double fRand(const double& fMin, const double& fMax)
-{
-    double f = (double)rand() / RAND_MAX;
-    return fMin + f * (fMax - fMin);
 }
 
 double P(const int& der,const int& n, double& theta) //legendre polynomials P(cos)n
@@ -423,8 +434,8 @@ double Quadratic(vector<vector<double>>& V, const double& W,  const double& Q2, 
 
 void All(vector<vector<double>>& V, const int& FileNumber)
 {
-	double W, Q2, theta, phi, S(0), P(0), Ep, Epi, p, mp(0.93827), mpi(0.13498), nu, ang1, ang2, weight(0), z, x, y;
-	int v(0);
+	double W, Q2, theta, phi, S(0), S1, P(0), Ep, Epi, p, mp(0.93827), mpi(0.13498), nu, ang1, ang2, weight(0), z, x, y,W_1, Q2_1, theta_1, phi_1;
+	int v(0); bool trigger(true), decision; double ratio;
 
 	double E0, W_min_d, W_max_d, Q2_min_d, Q2_max_d; int N, Hist, FileNumberAll, decay_m;
 	E0 = Settings[0];		N = Settings_mode[0];
@@ -459,26 +470,58 @@ void All(vector<vector<double>>& V, const int& FileNumber)
 
 	while(v < N)
 	{
-		theta = fRand(0, 180); 
-		phi = fRand(0, 360); 
-		W = fRand(W_min_d, W_max_d);
-		Q2 = fRand(Q2_min_d, Q2_max_d);
+		if(trigger)
+		{
+			theta = fRand(0, 180); 
+			phi = fRand(0, 360); 
+			W = fRand(W_min_d, W_max_d);
+			Q2 = fRand(Q2_min_d, Q2_max_d);
 
-		if(Settings_mode[4] == 0)
-		{
-			S = Linear(V, W, Q2, theta, phi, E0);
-		} else if(Settings_mode[4] == 1)
-		{
-			S = Quadratic(V, W, Q2, theta, phi, E0);
+			if(Settings_mode[4] == 0)
+			{
+				S = Linear(V, W, Q2, theta, phi, E0);
+			} else if(Settings_mode[4] == 1)
+			{
+				S = Quadratic(V, W, Q2, theta, phi, E0);
+			}
 		}
-
 
 		if(weight_mode == 0)
 		{
 			P = 0.00000000001*(rand() % 100000000000); 
-		} else 
+		} else if(weight_mode == 1) 
 		{
 			weight = S; P = 0;
+		} else if(weight_mode == 2)
+		{
+			trigger = false;
+			theta_1 = fRand(0, 180); 
+			phi_1 = fRand(0, 360); 
+			W_1 = fRand(W_min_d, W_max_d);
+			Q2_1 = fRand(Q2_min_d, Q2_max_d);
+
+			if(Settings_mode[4] == 0)
+			{
+				S1 = Linear(V, W_1, Q2_1, theta_1, phi_1, E0);
+			} else if(Settings_mode[4] == 1)
+			{
+				S1 = Quadratic(V, W_1, Q2_1, theta_1, phi_1, E0);
+			}
+
+			ratio = S1/S;
+
+			P = mmin(ratio);
+
+			decision = attempt(P);
+
+			if(decision)
+			{
+				theta = theta_1; 
+				phi = phi_1; 
+				W = W_1;
+				Q2 = Q2_1;
+				S = S1;
+			}
 		}
 
 		if((S/60) >= P) //
@@ -593,7 +636,7 @@ int main(int argc, char **argv)
 	vector<string> VecShap; 
 
 	cout << " ------------------------------------------------------------------- " << endl;
-	cout << "| Welcome to event builder for Pi0p and pin channels of meson       | \n| electroproduction reaction!                                       |       \n|                                                                   |\n|     Authors: Davydov M. - MSU, Physics dep.                       |\n|              Isupov E.  - MSU, SINP                               |\n|                                                   Version 4.2     |\n| https://github.com/Maksaska/pi0p-pin-generator/tree/Extrapolation |\n ------------------------------------------------------------------- " << endl;
+	cout << "| Welcome to event builder for Pi0p and Pi+n channels of meson      | \n| electroproduction reaction!                                       |       \n|                                                                   |\n|     Authors: Davydov M. - MSU, Physics dep.                       |\n|              Isupov E.  - MSU, SINP                               |\n|                                                   Version 6.0     |\n| https://github.com/Maksaska/pi0p-pin-generator                    |\n ------------------------------------------------------------------- " << endl;
 	
 	cout << endl;	
 
