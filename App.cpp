@@ -20,6 +20,8 @@ auto c1 = new TCanvas("c1", "Histogram", 1280, 1080);
 TH2* h1 = new TH2F("h1", "Histogram (W,Q^{2})_2d", 186, 1.08, 2, 440, 0, 10);
 TH1F* h3 = new TH1F("h3", "Histogram W", 186, 1.08, 2);
 TH1F* h4 = new TH1F("h4", "Histogram Q^{2}", 440, 0, 10);
+TH2* h5 = new TH2F("#pi^{0}p", "Histogram (#phi,cos(#theta^{*}))", 180, 0, 360, 100, -0.9 , 0.9);
+
 
 vector<double> Settings(5); vector<int> Settings_mode(5); int polarization(0), weight_mode(0); 
 double length(0), Radius_c(0), Q2_degree_extr(0);	
@@ -260,7 +262,7 @@ double Sections(vector<double>& info,const int& t, double& W, double& Q2,const i
 
 	Gamma_flux = (E0 - nu)*(W*W - mp*mp)/(137*4*M_PI*M_PI*mp*E0*(1 - eps)*Q2); 
 
-	S = Gamma_flux*S;
+	//S = Gamma_flux*S;
 
 	Mp.clear(); Mm.clear(); Ep.clear(); Em.clear(); Lp.clear(); Lm.clear(); 
 
@@ -425,8 +427,8 @@ double Quadratic(vector<vector<double>>& V, const double& W,  const double& Q2, 
 
 void All(vector<vector<double>>& V, const int& FileNumber)
 {
-	double W, Q2, theta, phi, S(0), P(0), Ep, Epi, p, mp(0.93827), mpi(0.13498), nu, ang1, ang2, weight(0), z, x, y;
-	int v(0);
+	double W, Q2, theta, phi, S(0), P(0), Ep, Epi, p, mp(0.93827), mpi(0.13498), nu, ang1, ang2, weight(0), z, x, y; 
+	int v(0); double fff;
 
 	double E0, W_min_d, W_max_d, Q2_min_d, Q2_max_d; int N, Hist, FileNumberAll, decay_m;
 	E0 = Settings[0];		N = Settings_mode[0];
@@ -455,9 +457,7 @@ void All(vector<vector<double>>& V, const int& FileNumber)
 
 	ofstream File;
 
-	File.open(FileName);
-
- 
+	File.open(FileName); 
 
 	while(v < N)
 	{
@@ -506,7 +506,8 @@ void All(vector<vector<double>>& V, const int& FileNumber)
 			{
 				h1 -> Fill(W, Q2);
 				h3 -> Fill(W);
-				h4 -> Fill(Q2);
+				h4 -> Fill(Q2); fff = cos(theta*M_PI/180);
+				h5 -> Fill(phi,fff);
 			}
 	
 			if((100*v)%N == 0)
@@ -544,10 +545,10 @@ gamma2.SetPxPyPzE(-mpi*cos(ang2*M_PI/180)*sin(ang1*M_PI/180)/2 ,-mpi*sin(ang2*M_
 			gamma1.Boost(beta);
 			gamma2.Boost(beta);
 
-      			adron.RotateY(acos((Q2 + 2*E0*nu)/(2*E0*sqrt(nu*nu + Q2))));
-			meson.RotateY(acos((Q2 + 2*E0*nu)/(2*E0*sqrt(nu*nu + Q2))));
-			gamma1.RotateY(acos((Q2 + 2*E0*nu)/(2*E0*sqrt(nu*nu + Q2))));
-			gamma2.RotateY(acos((Q2 + 2*E0*nu)/(2*E0*sqrt(nu*nu + Q2))));
+      			adron.RotateY(-acos((Q2 + 2*E0*nu)/(2*E0*sqrt(nu*nu + Q2))));
+			meson.RotateY(-acos((Q2 + 2*E0*nu)/(2*E0*sqrt(nu*nu + Q2))));
+			gamma1.RotateY(-acos((Q2 + 2*E0*nu)/(2*E0*sqrt(nu*nu + Q2))));
+			gamma2.RotateY(-acos((Q2 + 2*E0*nu)/(2*E0*sqrt(nu*nu + Q2))));
 
 			e.SetPxPyPzE( (E0 - nu)*sqrt(1 - pow(1 - Q2/(2*E0*(E0 - nu)),2)), 0, (E0 - nu)*(1 - Q2/(2*E0*(E0 - nu))), E0 - nu);
 
@@ -714,11 +715,21 @@ int main(int argc, char **argv)
 
 	if(Settings_mode[1] == 1)
 	{
+		h5->GetYaxis()->SetTitle("cos(#theta^{*})");
+		h5->GetYaxis()->SetTitleOffset(1.3);
+		h5->GetYaxis()->CenterTitle(true);
+		h5->GetXaxis()->SetTitle("#phi , grad");
+		h5->GetXaxis()->CenterTitle(true);
+
+		c1->cd(2);
+		//c1->SetLogz();
+		h5->Draw("COL");
+	
 		c1->cd(1);
 		h1->Draw("COL");
 
-		c1->cd(2);
-		h1->Draw("SURF2");
+		//c1->cd(2);
+		//h1->Draw("SURF2");
 
 		c1->cd(3);
 		h3->Draw();
