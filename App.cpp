@@ -205,7 +205,7 @@ double P(const int& der,const int& n, double& theta) //legendre polynomials P(co
 
 double Sections(vector<double>& info,const int& t, double& W, double& Q2,const int& phi,const double& E0)
 {
-	double theta(t*M_PI/180), mp(0.93827), mpi(0.13498), nu; //radians 
+	double theta(t*M_PI/180), mp(0.93827), mpi(0.13498), nu, nu_cm; //radians 
 	vector<complex<double>> Mp, Mm, Ep, Em, Lp, Lm; complex<double> Value; double Re, Im, eps, S, Gamma_flux(0);
 	complex<double> F1(0,0), F2(0,0), F3(0,0), F4(0,0), F5(0,0), F6(0,0);
 	double Rt, Rl, Rtl, Rtt, Rtl2, Rtt2;
@@ -215,14 +215,14 @@ double Sections(vector<double>& info,const int& t, double& W, double& Q2,const i
 		mpi = 0.13957; mp = 0.93957;
 	} 
 
-	double C,CC, L(0.14817); 
+	double C, CC, L(0.14817); 
 
 	double Epi = (W*W + mpi*mpi - mp*mp)/(2*W);
 	double Ppi = sqrt(Epi*Epi - mpi*mpi);
 	
-	nu =  (W*W + Q2 - mp*mp)/(2*mp);
+	nu =  (W*W + Q2 - mp*mp)/(2*mp); nu_cm = (W*W - Q2 - mp*mp)/(2*W);
 	
-	C = 2*W*Ppi/(W*W - mp*mp); CC = sqrt(Q2)/nu;
+	C = 2*W*Ppi/(W*W - mp*mp); CC = sqrt(Q2)/nu_cm; //CC = 1;
 	for(int l = 0; l < 6; l++)
 	{
 		Re = info[50 + 2*l]; Im = info[51 + 2*l]; Value = complex<double>(Re,Im); Mp.push_back(Value);
