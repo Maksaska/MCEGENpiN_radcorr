@@ -222,7 +222,7 @@ double Sections(vector<double>& info,const int& t, double& W, double& Q2,const i
 	
 	nu =  (W*W + Q2 - mp*mp)/(2*mp); nu_cm = (W*W - Q2 - mp*mp)/(2*W);
 	
-	C = 2*W*Ppi/(W*W - mp*mp); CC = sqrt(Q2)/nu_cm; //CC = 1;
+	C = 2*W*Ppi/(W*W - mp*mp); CC = sqrt(Q2)/nu_cm; CC = 1;
 	for(int l = 0; l < 6; l++)
 	{
 		Re = info[50 + 2*l]; Im = info[51 + 2*l]; Value = complex<double>(Re,Im); Mp.push_back(Value);
@@ -446,10 +446,10 @@ void All(vector<vector<double>>& V, const int& FileNumber)
 
 	if(Settings_mode[3] == 1 or Settings_mode[3] == 0)
 	{
-		sprintf(FileName,"pi0p_W_%g_%g_Q2_%g_%g_(%i).lund", W_min_d, W_max_d, Q2_min_d, Q2_max_d, FileNumber);
+		sprintf(FileName,"pi0p_W_%g_%g_Q2_%g_%g_(%i).dat", W_min_d, W_max_d, Q2_min_d, Q2_max_d, FileNumber);
 	} else 
 	{
-		sprintf(FileName,"pin_W_%g_%g_Q2_%g_%g_(%i).lund", W_min_d, W_max_d, Q2_min_d, Q2_max_d, FileNumber);
+		sprintf(FileName,"pin_W_%g_%g_Q2_%g_%g_(%i).dat", W_min_d, W_max_d, Q2_min_d, Q2_max_d, FileNumber);
 		mpi = 0.13957; mp = 0.93957;
 	}	
 
@@ -596,7 +596,7 @@ int main(int argc, char **argv)
 	vector<string> VecShap; 
 
 	cout << " ------------------------------------------------------------------- " << endl;
-	cout << "| Welcome to event builder for Pi0p and pin channels of meson       | \n| electroproduction reaction!                                       |       \n|                                                                   |\n|     Authors: Davydov M. - MSU, Physics dep.                       |\n|              Isupov E.  - MSU, SINP                               |\n|                                                   Version 4.2     |\n| https://github.com/Maksaska/pi0p-pin-generator/tree/Extrapolation |\n ------------------------------------------------------------------- " << endl;
+	cout << "| Welcome to event builder for Pi0p and pin channels of meson       | \n| electroproduction reaction!                                       |       \n|                                                                   |\n|     Authors: Davydov M. - MSU, Physics dep.                       |\n|              Isupov E.  - MSU, SINP                               |\n|                                                   Version 5.0     |\n| https://github.com/Maksaska/pi0p-pin-generator                    |\n ------------------------------------------------------------------- " << endl;
 	
 	cout << endl;	
 
