@@ -150,6 +150,17 @@ double fRand(const double& fMin, const double& fMax)
     return fMin + f * (fMax - fMin);
 }
 
+double mmin(double& x)
+{
+	return (x < 1) ? x:1;
+}
+
+bool attempt(double& p)
+{
+	double index = fRand(0, 1);
+	return (index < p) ? true : false;
+}
+
 double P(const int& der,const int& n, double& theta) //legendre polynomials P(cos)n
 {
 	double Value(0);
@@ -427,8 +438,8 @@ double Quadratic(vector<vector<double>>& V, const double& W,  const double& Q2, 
 
 void All(vector<vector<double>>& V, const int& FileNumber)
 {
-	double W, Q2, theta, phi, S(0), P(0), Ep, Epi, p, mp(0.93827), mpi(0.13498), nu, ang1, ang2, weight(0), z, x, y; 
-	int v(0); double fff;
+	double W, Q2, theta, phi, S(0), S1, P(0), Ep, Epi, p, mp(0.93827), mpi(0.13498), nu, ang1, ang2, weight(0), z, x, y, W_1, Q2_1, theta_1, phi_1; 
+	int v(0); double fff; bool trigger(true), decision; double ratio; double acceptance_rate(1.0); int acc_r(0);
 
 	double E0, W_min_d, W_max_d, Q2_min_d, Q2_max_d; int N, Hist, FileNumberAll, decay_m;
 	E0 = Settings[0];		N = Settings_mode[0];
@@ -461,31 +472,65 @@ void All(vector<vector<double>>& V, const int& FileNumber)
 
 	while(v < N)
 	{
-		theta = fRand(0, 180); 
-		phi = fRand(0, 360); 
-		W = fRand(W_min_d, W_max_d);
-		Q2 = fRand(Q2_min_d, Q2_max_d);
+		if(trigger)
+		{
+			theta = fRand(0, 180); 
+			phi = fRand(0, 360); 
+			W = fRand(W_min_d, W_max_d);
+			Q2 = fRand(Q2_min_d, Q2_max_d);
 
-		if(Settings_mode[4] == 0)
-		{
-			S = Linear(V, W, Q2, theta, phi, E0);
-		} else if(Settings_mode[4] == 1)
-		{
-			S = Quadratic(V, W, Q2, theta, phi, E0);
+			if(Settings_mode[4] == 0)
+			{
+				S = Linear(V, W, Q2, theta, phi, E0);
+			} else if(Settings_mode[4] == 1)
+			{
+				S = Quadratic(V, W, Q2, theta, phi, E0);
+			}
 		}
-
 
 		if(weight_mode == 0)
 		{
 			P = 0.00000000001*(rand() % 100000000000); 
-		} else 
+		} else if(weight_mode == 1) 
 		{
 			weight = S; P = 0;
+		} else if(weight_mode == 2) 
+		{
+			trigger = false;
+			theta_1 = fRand(0, 180); 
+			phi_1 = fRand(0, 360); 
+			W_1 = fRand(W_min_d, W_max_d);
+			Q2_1 = fRand(Q2_min_d, Q2_max_d);
+
+			if(Settings_mode[4] == 0)
+			{
+				S1 = Linear(V, W_1, Q2_1, theta_1, phi_1, E0);
+			} else if(Settings_mode[4] == 1)
+			{
+				S1 = Quadratic(V, W_1, Q2_1, theta_1, phi_1, E0);
+			}
+
+			ratio = S1/S;
+
+			P = mmin(ratio);
+
+			decision = attempt(P); P = 0; 
+
+			if(decision)
+			{
+				acc_r++;
+				theta = theta_1; 
+				phi = phi_1; 
+				W = W_1;
+				Q2 = Q2_1;
+				S = S1;
+			}
+			
 		}
 
 		if((S/60) >= P) //
 		{
-			v++; 
+			v++; acceptance_rate = double(acc_r)/double(v);
 
 			if(length != 0)
 			{
@@ -510,9 +555,15 @@ void All(vector<vector<double>>& V, const int& FileNumber)
 				h5 -> Fill(phi,fff);
 			}
 	
-			if((100*v)%N == 0)
+			if((100*v)%N == 0 and weight_mode != 2)
 			{
-				cout << 100*v/N << "%\tFile " << FileNumber << " of " << FileNumberAll << endl;
+				cout << " " << 100*v/N << "%\tFile " << FileNumber << " of " << FileNumberAll << "\r" << flush;
+			}
+			
+			if((100*v)%N == 0 and weight_mode == 2)
+			{
+				cout << " " << 100*v/N << "%\tFile " << FileNumber << " of " << FileNumberAll;
+				cout << "\tAcceptance rate: " << acceptance_rate << "\r" << flush;
 			}			
 
 			Epi = (W*W + mpi*mpi - mp*mp)/(2*W);
@@ -585,7 +636,7 @@ File << 0 << " " << 0 << " " << 0 << " " << 211 << " " << 0 << " " << 0 << " " <
 		}
 	}
 
-	cout << "\tCompleted 100%" << endl;
+	cout << "\n\tCompleted 100%" << endl;
 
 	File.close();	
 }
@@ -626,7 +677,7 @@ int main(int argc, char **argv)
 
 	if(Settings[0] < 0)
 	{
-		cout << "The beam energy is below zero!" << endl;
+		cout << "Beam energy is below zero!" << endl;
 		return 0;
 	}
  
@@ -686,8 +737,8 @@ int main(int argc, char **argv)
 		return 0;
 	}	
 
-	cout << "The beam energy is E = " << Settings[0] << " GeV" << endl;
-	cout << "Choosen kinematic area of (W, Q^2) values is W: " << Settings[1] << " - " << Settings[2] << " GeV , Q2: " << Settings[3] << " - " << Settings[4] << " GeV^2" << endl;
+	cout << "Beam energy is E = " << Settings[0] << " GeV" << endl;
+	cout << "Chosen kinematic area of (W, Q^2) values is W: " << Settings[1] << " - " << Settings[2] << " GeV , Q2: " << Settings[3] << " - " << Settings[4] << " GeV^2" << endl;
 	cout << "Total amount of files: " << Settings_mode[2] << "\nHistogram need: ";
 	if(Settings_mode[1] == 1){cout << "Yes" << endl;} else {cout << "No" << endl;}
 	cout << "Interpolation mode: ";
@@ -701,6 +752,21 @@ int main(int argc, char **argv)
 	{
 		cout << "Channel: pin" << endl;
 	}	
+	
+	if(weight_mode == 0)
+	{
+		cout << "Acc/Rej method" << endl;
+	}
+	
+	if(weight_mode == 1)
+	{
+		cout << "Uniform distribution with weights" << endl;
+	}
+	
+	if(weight_mode == 2)
+	{
+		cout << "Metropolis–Hastings algorithm (MCMC)" << endl;
+	}
 	
 	cout << "Stand by...\n" << endl;	
 
@@ -722,10 +788,11 @@ int main(int argc, char **argv)
 		h5->GetXaxis()->CenterTitle(true);
 
 		c1->cd(2);
-		//c1->SetLogz();
+		c1->SetLogz();
 		h5->Draw("COL");
 	
 		c1->cd(1);
+		c1->SetLogz();
 		h1->Draw("COL");
 
 		//c1->cd(2);
