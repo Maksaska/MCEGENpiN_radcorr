@@ -12,6 +12,7 @@
 #include "TLorentzVector.h"
 #include <complex>
 #include <ctime>
+#include <chrono>
 
 using namespace std;
 
@@ -645,6 +646,7 @@ int main(int argc, char **argv)
 {
 	vector<vector<double>> Biggy; 
 	vector<string> VecShap; 
+	auto start = std::chrono::high_resolution_clock::now();
 
 	cout << " ------------------------------------------------------------------- " << endl;
 	cout << "| Welcome to event builder for Pi0p and pin channels of meson       | \n| electroproduction reaction!                                       |       \n|                                                                   |\n|     Authors: Davydov M. - MSU, Physics dep.                       |\n|              Isupov E.  - MSU, SINP                               |\n|                                                   Version 5.0     |\n| https://github.com/Maksaska/pi0p-pin-generator                    |\n ------------------------------------------------------------------- " << endl;
@@ -814,6 +816,10 @@ int main(int argc, char **argv)
 	Biggy.clear(); 
 	VecShap.clear(); 
 	Settings.clear(); Settings_mode.clear();
+	
+	auto finish = std::chrono::high_resolution_clock::now();
+	std::chrono::duration<double> elapsed = finish - start;
+	cout << "\nElapsed time: " << elapsed.count() << " s\n";
 
 	return 0;
 }
