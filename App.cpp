@@ -1,37 +1,339 @@
-#include <iostream> 
-#include <fstream>
 #include <vector>
+#include <iostream> 
 #include <string.h>
-#include <sstream>
 #define _USE_MATH_DEFINES
 #include <math.h>
+#include <complex>
+#include <ctime>
+#include <chrono>
 #include "TApplication.h"
 #include "TCanvas.h"
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TLorentzVector.h"
-#include <complex>
-#include <ctime>
-#include <chrono>
+#include <deque>
+#include <fstream>
+#include <getopt.h>
 
 using namespace std;
 
-auto c1 = new TCanvas("c1", "Histogram", 1280, 1080); 
-  
-TH2* h1 = new TH2F("h1", "Histogram (W,Q^{2})_2d", 186, 1.08, 2, 440, 0, 10);
+auto c1 = new TCanvas("c1", "Histogram", 1280, 1080);   
+TH2* h1 = new TH2F("h1", "Histogram (W,Q^{2})_2d", 186, 1.08, 2, 440, 0, 5);
 TH1F* h3 = new TH1F("h3", "Histogram W", 186, 1.08, 2);
-TH1F* h4 = new TH1F("h4", "Histogram Q^{2}", 440, 0, 10);
-TH2* h5 = new TH2F("#pi^{0}p", "Histogram (#phi,cos(#theta^{*}))", 180, 0, 360, 100, -0.9 , 0.9);
+TH1F* h4 = new TH1F("h4", "Histogram Q^{2}", 440, 0, 5);
+TH2* h5 = new TH2F("h5", "Histogram (#phi,cos(#theta^{*}))", 180, 0, 2*M_PI, 100, -1 , 1);
 
+double E0(6.5), R(1), L(10), W_min(1.08), W_max(2.0), Q2_min(0.05), Q2_max(5.0);
+double Q2_line(5.0), W_line(2.0);
+int h(0), N(1000000); 
+bool channel(true), method(true), histogram(false), rad_corr(false);
+string path = "pi0p.dat";
+string source = "pi0p.csv";
+string source_interp = "pi0p_int.csv";
+vector<vector<double>> data, data_interp;
+double m_p(0.93827), m_n(0.93957), m_pip(0.13957), m_pi0(0.13498), m_e(0.000511), delta(0.01); 
+vector<double> values_rad{9999, 1, 9999, 1};
 
-vector<double> Settings(5); vector<int> Settings_mode(5); int polarization(0), weight_mode(0); 
-double length(0), Radius_c(0), Q2_degree_extr(0);	
+/* -------- kinematics.cpp -------- */ 
 
+double fRand(const double& fMin, const double& fMax); /*   random function from [fMin,fMax] area   */ 
+double q(const double& W); /*   Pion momentum   */
+double k(const double& W); /*   Photon equivalent energy   */
+double k_mod(const double& W, const double& Q2); /*   Virtual photon momentum   */
+double E1(const double& W, const double& Q2); /*   init. electron energy in cm   */
+double E2(const double& W); /*   final electron energy in cm   */
+double Eq(const double& W, const double& Q2); /*   virtual photon energy in cm   */
+double lambda_q(const double& W, const double& Q2);
+double cos_1(const double& W, const double& Q2); /*   cos(theta)_1 - for polar angle of init. electron   */
+double cos_2(const double& W, const double& Q2); /*   cos(theta)_2 - for polar angle of final electron   */
+double sin_1(const double& W, const double& Q2); /*   sin(theta)_1 - for polar angle of init. electron   */
+double sin_2(const double& W, const double& Q2); /*   sin(theta)_2 - for polar angle of final electron   */
 
+/* -------- general.cpp -------- */  
+ 
+void input_check(int argc, char* argv[]); /*   This function checks if there any option were passed in main()   */
+void Reading(string Path,vector<vector<double>>&V); /*   Reads the data from csv   */
+double P(const int& der,const int& n, const double& theta); /*   Legendre polynomials   */	
+vector<complex<double>> Finder(const double& W,  const double& Q2); /*   it searches for multipoles EMS   */					
+void generate_particle();/*   
+				* This function generates the event
+				* It creates kin. parameters from given E0 [W_min, W_max] && [Q2_min, Q2_max]
+				* Gets the cross-section
+				* Creates the Particle
+				* Creates the Event 
+				* Writes the event in output file
+									*/
 
-void Reading(string Path,vector<vector<double>>& V2, vector<string>& V3)
+vector<double> Coefficients_lin(const double& x1, const double& y1, const double& x2, const double& y2); /*   Coef. for linear interp.   */
+double Linear(const double& W,  const double& Q2, const double& theta,  const double& phi); /*   linear interpolation   */		
+double Section(const double& W,  const double& Q2, const double& theta,  const double& phi); /*  
+								 Cross_section evaluation from Helicity ampl.   
+								 						*/
+								 						
+vector<complex<double>> Helicity_amplitudes(const double& W,  const double& Q2, const double& theta);/*   Helicity ampl. eval.   */
+double Section_int(const double& W, const double& Q2, const double& E_beam); /*   Integral cross section dS/dOmegadE from dataset   */
+double Section_interp_int(const double& W, const double& Q2, const double& E_beam); /*   Integral cross section dS/dOmegadE for random W, Q2   */
+double Spence(const double& x);
+double delta_r(const double& W, const double& Q2);
+double ts(const double& W, const double& Q2, const double& iter);
+double tp(const double& W, const double& Q2, const double& iter);
+double R1(const double& W, const double& Q2); /*   soft region for RC   */
+double R2(const double& W, const double& Q2); /*   Hard radiation with init. elec.   */
+double R3(const double& W, const double& Q2); /*   Hard radiation with final elec.   */
+double Gen_omega_init(const double& W, const double& Q2); /*   Rad. photon energy generation from init. elec.   */
+double Gen_omega_fin(const double& W, const double& Q2); /*   Rad. photon energy generation from fin. elec.   */
+
+struct Particle
 {
-	string lane, line, word; stringstream ss;
+	TLorentzVector p;
+	int id;
+	double mass;
+};
+
+class Event 
+{
+	private:
+		double x, y, z, cross_section, beam_energy;
+		deque<Particle> bunch;	
+		int beam_polarization;
+		bool cm_system;
+	public: 	
+		TVector3 get_coordinates()
+		{
+			TVector3 beta(x, y, z);
+			return beta;
+		}
+		
+		Event();
+		Event(TVector3&);
+		Event(TVector3&, double&);	
+		
+		Event(const Event& buff) : x(buff.x), y(buff.y), z(buff.z), cross_section(buff.cross_section), beam_energy(buff.beam_energy),
+		bunch(buff.bunch), beam_polarization(buff.beam_polarization), cm_system(buff.cm_system) {}
+	
+		double get_section(){return cross_section;}
+		void set_beam(double&, int&); 
+		void set_coordinates(double&, double&); 
+		void set_section(double&); 
+		void add_particle(Particle&); 
+		void clear_event(){bunch.clear();}
+		void print_lund(string&);
+		void set_cm_system();
+		void set_lab_system();		
+		void cm_to_lab(double&, double&);
+		void lab_to_cm(double&, double&);
+		void Z_rotate_random();
+
+		
+};
+
+Event::Event()
+{
+	x = 0; y = 0; z = 0;
+	beam_energy = 6.565;
+	cross_section = 0.001;
+	beam_polarization = 0;
+	cm_system = true;
+}
+
+Event::Event(TVector3& beta)
+{
+	x = beta.X(); y = beta.Y(); z = beta.Z();
+	beam_energy = 6.565;
+	cross_section = 0.001;
+	beam_polarization = 0;
+	cm_system = true;
+}
+
+Event::Event(TVector3& beta, double& E)
+{
+	x = beta.X(); y = beta.Y(); z = beta.Z();
+	beam_energy = E;
+	cross_section = 0.001;
+	beam_polarization = 0;
+	cm_system = true;
+}
+
+void Event::set_beam(double& E, int& h) 
+{
+	beam_energy = E;
+	beam_polarization = h;
+}
+
+void Event::set_coordinates(double& R, double& L)
+{
+	x = 2*R; 
+	y = 2*R;
+	
+	while(x*x + y*y > R*R)
+	{
+		x = fRand(-R, R);
+		y = fRand(-R, R);
+	}
+	z = fRand(-L/2, L/2);
+}
+
+void Event::set_section(double& S)
+{
+	cross_section = S;
+}
+
+void Event::add_particle(Particle& buff)
+{
+	bunch.push_back(buff);
+}
+
+void Event::print_lund(string& Path)
+{
+	ofstream File;
+	
+	File.open(Path,fstream::in | fstream::out | fstream::app);
+	
+	File << bunch.size() << "\t1\t1\t0\t" << beam_polarization << "\t11\t" << beam_energy << "\t2212\t0\t" << cross_section << endl;
+	
+	for(long unsigned int i = 0; i < bunch.size(); i++)
+	{
+		File << i+1 << "\t0\t0\t" << bunch[i].id << "\t0\t0\t" << (bunch[i].p).Px() << "\t" <<  (bunch[i].p).Py() << "\t" 
+		<< (bunch[i].p).Pz() << "\t" << (bunch[i].p).E() << "\t" << bunch[i].mass << "\t" << x << "\t" << y << "\t" << z << endl;
+	}
+	
+	File.close();
+}
+
+void Event::set_cm_system()
+{
+	cm_system = true;
+} 
+
+void Event::set_lab_system()
+{
+	cm_system = false;
+} 
+
+void Event::cm_to_lab(double& W, double& Q2)
+{
+	if(cm_system)
+	{
+		TVector3 beta; double nu;
+		nu =  (W*W + Q2 - m_p*m_p)/(2*m_p);			
+		beta.SetXYZ(0., 0., sqrt(nu*nu + Q2)/(nu + m_p));
+		double ang = fRand(0, 2*M_PI);
+		
+		for(long unsigned int i = 0; i < bunch.size(); i++)
+		{	
+			(bunch[i].p).Boost(beta);
+			(bunch[i].p).RotateY(-acos((Q2 + 2*beam_energy*nu)/(2*beam_energy*sqrt(nu*nu + Q2))));
+			(bunch[i].p).RotateZ(ang);
+		}			
+		cm_system = false;	
+	}
+}
+
+void Event::Z_rotate_random()
+{
+	double ang = fRand(0, 2*M_PI);
+	
+	for(long unsigned int i = 0; i < bunch.size(); i++)
+	{	
+		(bunch[i].p).RotateZ(ang);
+	}			
+}
+
+void Event::lab_to_cm(double& W, double& Q2)
+{
+	if(cm_system == false)
+	{
+		TVector3 beta; double nu, ang1, ang2;
+		TLorentzVector e_i, q; e_i.SetPxPyPzE(0, 0, beam_energy, beam_energy);
+		
+		for(long unsigned int i = 0; i < bunch.size(); i++)
+		{	
+			if(bunch[i].id == 11)
+			{
+				ang1 = (bunch[i].p).Phi();
+				q = e_i - bunch[i].p;
+				ang2 = q.Theta();
+			}
+		}	
+
+		nu =  (W*W + Q2 - m_p*m_p)/(2*m_p);			
+		beta.SetXYZ(0., 0., -sqrt(nu*nu + Q2)/(nu + m_p));
+		
+		for(long unsigned int i = 0; i < bunch.size(); i++)
+		{	
+			(bunch[i].p).RotateZ(-ang1); 
+			(bunch[i].p).RotateY(ang2);
+			(bunch[i].p).Boost(beta);
+		}			
+		cm_system = true;	
+	}
+}
+
+double fRand(const double& fMin, const double& fMax)
+{
+    double f = (double)rand() / RAND_MAX;
+    return fMin + f * (fMax - fMin);
+}
+
+double q(const double& W)
+{
+	if(channel){return sqrt((W*W + m_pi0*m_pi0 - m_p*m_p)*(W*W + m_pi0*m_pi0 - m_p*m_p)/(4*W*W) - m_pi0*m_pi0);}
+	else{return sqrt((W*W + m_pip*m_pip - m_n*m_n)*(W*W + m_pip*m_pip - m_n*m_n)/(4*W*W) - m_pip*m_pip);}	
+}
+
+double k(const double& W)
+{
+	return (W*W - m_p*m_p)/(2*W);
+}
+
+double k_mod(const double& W, const double& Q2)
+{
+	return sqrt(Q2 + pow(W*W - m_p*m_p - Q2, 2)/(4*W*W));
+}
+
+double Eq(const double& W, const double& Q2) /*   virtual photon energy in cm   */
+{
+	return (W*W - Q2 - m_p*m_p)/(2*W);
+}
+
+double lambda_q(const double& W, const double& Q2)
+{
+	return 4*W*W*(Eq(W, Q2)*Eq(W, Q2) + Q2);
+}
+
+double E1(const double& W, const double& Q2) /*   init. electron energy in cm   */
+{
+	return (2*E0*m_p - Q2)/(2*W);
+}
+
+double E2(const double& W) /*   final electron energy in cm   */
+{
+	return (2*E0*m_p - W*W + m_p*m_p)/(2*W);
+}
+
+double cos_1(const double& W, const double& Q2) /*   cos(theta)_1 - for polar angle of init. electron   */
+{
+	return ((2*E0*m_p - Q2)*(W*W - Q2 - m_p*m_p) + 2*Q2*W*W)/(2*W*sqrt(E1(W, Q2)*E1(W, Q2) - m_e*m_e)*sqrt(lambda_q(W, Q2)));
+}
+
+double cos_2(const double& W, const double& Q2) /*   cos(theta)_2 - for polar angle of final electron   */
+{
+	return ((2*E0*m_p - W*W + m_p*m_p)*(W*W - Q2 - m_p*m_p) - 2*Q2*W*W)/(2*W*sqrt(E2(W)*E2(W) - m_e*m_e)*sqrt(lambda_q(W, Q2)));
+}
+
+double sin_1(const double& W, const double& Q2) /*   sin(theta)_1 - for polar angle of init. electron   */
+{
+	return sqrt(1 - cos_1(W, Q2)*cos_1(W, Q2));
+}
+
+double sin_2(const double& W, const double& Q2) /*   sin(theta)_2 - for polar angle of final electron   */
+{
+	return sqrt(1 - cos_2(W, Q2)*cos_2(W, Q2));
+}
+
+void Reading(string Path, vector<vector<double>>& V)
+{
+	string line; stringstream ss;
 	ifstream File;
 	double dub; int w(1); vector<double> Numbers;
 
@@ -47,7 +349,7 @@ void Reading(string Path,vector<vector<double>>& V2, vector<string>& V3)
 		{		
 			if (w == 1)
 			{
-				getline(File,lane);
+				getline(File,line);
 				w = 0;
 			}
 
@@ -66,103 +368,128 @@ void Reading(string Path,vector<vector<double>>& V2, vector<string>& V3)
             			ss.ignore();
 			}
 	
-			V2.push_back(Numbers);
+			V.push_back(Numbers);
 			
 			Numbers.clear();
 
 			ss.clear();
-
-
 		}
-	}
-
-	string str = ",";
-	str.insert(0,lane);
-	lane = str;
-	string delim(",");
-	size_t prev = 0;
-	size_t next;
-	size_t delta = delim.length();
-
-	while(( next = lane.find( delim, prev ) ) != string::npos)
-	{
-		string tmp = lane.substr( prev, next-prev );
-   		V3.push_back( lane.substr( prev, next-prev ) );
-   		prev = next + delta;
 	}
 	File.close();
 }
 
-void PrintVectorS(vector<string>& V3)
+void input_check(int argc, char* argv[])
 {
-	for (vector<string>::iterator it=V3.begin();it!=V3.end();it++)
-	{
-		cout << *it << "\t\t";
-	}
-	cout << endl;
-}
-
-void Print(vector<complex<double>>& V3)
-{
-	for (vector<complex<double>>::iterator it=V3.begin();it!=V3.end();it++)
-	{
-		if(imag(*it) < 0)
-		{
-			cout << real(*it) << imag(*it) <<  "i\t\t";
-		}
-		else
-		{
-			cout << real(*it) << " + " << imag(*it) <<  "i\t\t";
-		}
-		
-	}
-	cout << endl;
-}
-
-
-void PrintVectorD(const vector<double>& V3)
-{
-	for (const auto& i : V3)
-	{
-		cout << i << "\t"; 
-	}
-	cout << endl;
-	cout << "\n\n\n\n\nCol-vo:" << V3.size() << endl; 
-}
-
-void PrintBiggy(const vector<vector<double>>& V)
-{
-	int y(0);
-	for ( int i = 0; i < V.size(); i++)
-	{
-		for( int j = 0; j < V[i].size(); j++)
-		{
-			cout << V[i][j] << "\t";
-		}
-		cout << endl; y++;
-	}
+	const char* short_options = "nwe:r:l:N:h:z:x:c:v:pm"; int rez; int option_index;
 	
-	cout << "Col-vo strok: " << y << endl;
+	const struct option long_options[] = {
+						{"beam_energy", required_argument, NULL, 'e'},
+	       				{"target_R", required_argument, NULL, 'r'},
+	        				{"target_L", required_argument, NULL, 'l'},
+	        				{"W_min", required_argument, NULL, 'z'},
+	        				{"W_max", required_argument, NULL, 'x'},
+	        				{"Q2_min", required_argument, NULL, 'c'},
+	        				{"Q2_max", required_argument, NULL, 'v'},
+	        				{"hist", no_argument, NULL, 'p'},
+	        				{"RC", no_argument, NULL, 'm'},
+	        				{NULL, 0, NULL, 0}
+								};
+	while ((rez=getopt_long(argc, argv, short_options, long_options, &option_index)) != -1)
+	{ 
+		switch(rez)
+		{
+			case 'n': 
+			{
+				channel = false;
+				path = "pin.dat"; 
+				source = "pin.csv";
+				source_interp = "pin_int.csv";
+				break;
+			};			
+			case 'w': 
+			{
+				method = false;
+				break;
+			};
+			case 'p': 
+			{
+				histogram = true;
+				break;
+			};	
+			case 'm': 
+			{
+				rad_corr = true;
+				break;
+			};
+			case 'e': {
+				E0 = atof(optarg);
+				break;
+			};
+			case 'r': {
+				R = atof(optarg);
+				break;
+			};
+			case 'l': {
+				L = atof(optarg);
+				break;
+			};
+			case 'N': {
+				N = atoi(optarg);
+				break;
+			};
+			case 'h': {
+				h = atoi(optarg);
+				break;
+			};
+			case 'z': {
+				W_min = atof(optarg);
+				if(W_min < 1.08){W_min = 1.08;}
+				break;
+			};
+			case 'x': {
+				W_max = atof(optarg);
+				if(W_max > 2.0){W_max = 2.0;}
+				break;
+			};
+			case 'c': {
+				Q2_min = atof(optarg);
+				if(Q2_min < 0.05){Q2_min = 0.05;}
+				break;
+			};
+			case 'v': {
+				Q2_max = atof(optarg);
+				if(Q2_max > 5.0){Q2_max = 5.0;}
+				break;
+			};	
+			case '?': default: {
+				cerr << "Unkhown option" << endl;
+				break;
+			};
+		};
+	};
+	
+	cout << " ------------------------------------------------------------------- " << endl;
+	cout << "| Monte Carlo event generator for exclusive pion electroproduction  | \n| with radiative corrections              \"MCEGENpiN_radcorr V7b\"   |       \n|                                                                   |\n|     Authors: Davydov M. - MSU, Physics dep.                       |\n|              Isupov E.  - MSU, SINP                               |\n|                                                                   |\n| https://github.com/Maksaska/pi0p-pin-generator                    |\n ------------------------------------------------------------------- " << endl;
+	
+	cout << endl;	
+	
+	cout << "Beam energy is E = " << E0 << " GeV with";
+	if(h != 0){cout << " polarization h = " << h << endl;}
+	else{cout << " no polarization" << endl;}
+	cout << "Chosen kinematic area of (W, Q^2) values is W: " << W_min << " - " << W_max << " GeV , Q2: " << Q2_min << " - " << Q2_max << " GeV^2" << endl;
+	if(channel){cout << "Channel: pi0p with decay" << endl;}
+	else{cout << "Channel: pi+n" << endl;}
+	cout << "Uniform distribution with weights" << endl;
+	cout << "Number of events: " << N << endl;
+	if(histogram){cout << "Histograms  will be created\n" << endl;}
+	if(rad_corr){cout << "Radiative corrections: Enabled\n" << endl;}
+	else{cout << "Radiative corrections: Disabled\n" << endl;}	
+	
+	Reading(source, data);	
+	Reading(source_interp, data_interp);
 }
 
-double fRand(const double& fMin, const double& fMax)
-{
-    double f = (double)rand() / RAND_MAX;
-    return fMin + f * (fMax - fMin);
-}
-
-double mmin(double& x)
-{
-	return (x < 1) ? x:1;
-}
-
-bool attempt(double& p)
-{
-	double index = fRand(0, 1);
-	return (index < p) ? true : false;
-}
-
-double P(const int& der,const int& n, double& theta) //legendre polynomials P(cos)n
+double P(const int& der,const int& n, const double& theta) 
 {
 	double Value(0);
 
@@ -215,69 +542,136 @@ double P(const int& der,const int& n, double& theta) //legendre polynomials P(co
 	return Value;
 }
 
-double Sections(vector<double>& info,const int& t, double& W, double& Q2,const int& phi,const double& E0)
+vector<complex<double>> Finder(const double& W,  const double& Q2)
 {
-	double theta(t*M_PI/180), mp(0.93827), mpi(0.13498), nu, nu_cm; //radians 
-	vector<complex<double>> Mp, Mm, Ep, Em, Lp, Lm; complex<double> Value; double Re, Im, eps, S, Gamma_flux(0);
-	complex<double> F1(0,0), F2(0,0), F3(0,0), F4(0,0), F5(0,0), F6(0,0);
-	double Rt, Rl, Rtl, Rtt, Rtl2, Rtt2;
-
-	if(Settings_mode[3] == 2)
+	vector<complex<double>> mult;
+	complex<double> buff; 
+	
+	for(long unsigned int i = 0; i < data.size(); i++)
 	{
-		mpi = 0.13957; mp = 0.93957;
+		if(data[i][0] == W and data[i][1] == Q2)
+		{
+			for(long unsigned int j = 26; j < data[i].size()-1; j++)
+			{
+				if(j == 38 or j == 50 or j == 62)
+				{
+					buff.real(0);
+					buff.imag(0);
+					mult.push_back(buff);
+				}
+				buff.real(data[i][j]);
+				buff.imag(data[i][j+1]);
+				mult.push_back(buff); j++;
+			}
+			
+			buff.real(0);
+			buff.imag(0);
+			mult.push_back(buff);
+			
+			for(int j = 2; j < 25; j++)
+			{
+				if(j == 14)
+				{
+					buff.real(0);
+					buff.imag(0);
+					mult.push_back(buff);
+				}
+				buff.real(data[i][j]);
+				buff.imag(data[i][j+1]);
+				mult.push_back(buff); j++;
+			}
+			
+			buff.real(0);
+			buff.imag(0);
+			mult.push_back(buff);
+			
+			return mult;	
+		}
+	}
+
+	return mult;
+}
+
+vector<complex<double>> Helicity_amplitudes(const double& W,  const double& Q2, const double& theta)
+{
+	vector<complex<double>> AMP, H; double l;
+	complex<double> buff; buff = 0;
+	
+	AMP = Finder(W, Q2);
+	
+	for(int i = 0; i < 6; i++) // H1
+	{
+		l = double(i);
+		buff += (AMP[l] - AMP[l+14] - AMP[l+8] - AMP[l+22])*(P(2,i,theta) - P(2,i+1,theta));
 	} 
-
-	double C, CC, L(0.14817); 
-
-	double Epi = (W*W + mpi*mpi - mp*mp)/(2*W);
-	double Ppi = sqrt(Epi*Epi - mpi*mpi);
+	buff = buff*sin(theta)*cos(theta/2)/sqrt(2);
+	H.push_back(buff); buff = 0;
 	
-	nu =  (W*W + Q2 - mp*mp)/(2*mp); nu_cm = (W*W - Q2 - mp*mp)/(2*W);
+	for(int i = 0; i < 6; i++) // H2
+	{
+		l = double(i);
+		buff += ((l+2)*AMP[l] + l*AMP[l+14] + l*AMP[l+8] - (l+2)*AMP[l+22])*(P(1,i,theta) - P(1,i+1,theta));
+	} 
+	buff = buff*cos(theta/2)/sqrt(2);
+	H.push_back(buff); buff = 0;
 	
-	C = 2*W*Ppi/(W*W - mp*mp); CC = sqrt(Q2)/nu_cm; CC = 1;
-	for(int l = 0; l < 6; l++)
+	for(int i = 0; i < 6; i++) // H3
 	{
-		Re = info[50 + 2*l]; Im = info[51 + 2*l]; Value = complex<double>(Re,Im); Mp.push_back(Value);
-		Re = info[62 + 2*l]; Im = info[63 + 2*l]; Value = complex<double>(Re,Im); Mm.push_back(Value);
-		Re = info[26 + 2*l]; Im = info[27 + 2*l]; Value = complex<double>(Re,Im); Ep.push_back(Value);
-		Re = info[38 + 2*l]; Im = info[39 + 2*l]; Value = complex<double>(Re,Im); Em.push_back(Value);
-		Re = info[2 + 2*l]; Im = info[3 + 2*l]; Value = complex<double>(Re,Im); Lp.push_back(Value);
-		Re = info[14 + 2*l]; Im = info[15 + 2*l]; Value = complex<double>(Re,Im); Lm.push_back(Value);
-	}
-
-	for(int i = 0; i < 6; i++)
+		l = double(i);
+		buff += (AMP[l] - AMP[l+14] + AMP[l+8] + AMP[l+22])*(P(2,i,theta) + P(2,i+1,theta));
+	} 
+	buff = buff*sin(theta)*sin(theta/2)/sqrt(2);
+	H.push_back(buff); buff = 0;
+	
+	for(int i = 0; i < 6; i++) // H4
 	{
-		double l = double(i);
-		F1 = F1 + (l*Mp[l] + Ep[l])*P(1, l+1, theta) + ((l+1)*Mm[l] + Em[l])*P(1, l-1, theta); 
-		F2 = F2 + ((l+1)*Mp[l] + l*Mm[l])*P(1, l, theta);
-		F3 = F3 + (Ep[l] - Mp[l])*P(2, l+1, theta) + (Em[l] + Mm[l])*P(2, l-1, theta);
-		F4 = F4 + (Mp[l] - Ep[l] - Mm[l] - Em[l])*P(2, l, theta);
-		F5 = F5 + (l+1)*Lp[l]*P(1, l+1, theta) - l*Lm[l]*P(1, l-1, theta);
-		F6 = F6 + (l*Lm[l] - (l+1)*Lp[l])*P(1, l, theta); }
-		
-		Rt = pow(L, 2)*(abs(F1)*abs(F1) + abs(F2)*abs(F2) + 0.5*pow(sin(theta), 2)*(abs(F3)*abs(F3) + abs(F4)*abs(F4)) - real(2*cos(theta)*conj(F1)*F2 - pow(sin(theta),2)*(conj(F1)*F4 + conj(F2)*F3 + cos(theta)*conj(F3)*F4)));
-		Rl = CC*CC*pow(L, 2)*(abs(F5)*abs(F5) + abs(F6)*abs(F6) + 2*cos(theta)*real(conj(F5)*F6));
-		Rtl = CC*pow(L, 2)*(-sin(theta)*real((conj(F2) + conj(F3) + cos(theta)*conj(F4))*F5 + (conj(F1) + conj(F4) + cos(theta)*conj(F3))*F6));
-	Rtt = pow(L, 2)*pow(sin(theta), 2)*(0.5*(abs(F3)*abs(F3) + abs(F4)*abs(F4)) + real(conj(F1)*F4 + conj(F2)*F3 + cos(theta)*conj(F3)*F4));
-
-		Rtl2 = CC*pow(L, 2)*(-sin(theta)*imag((conj(F2) + conj(F3) + cos(theta)*conj(F4))*F5 + (conj(F1) + conj(F4) + cos(theta)*conj(F3))*F6));
-
-	eps = 1/(1 + 2*(nu*nu + Q2)/(4*(E0 - nu)*E0 - Q2));
-
-	if(Q2 > 5)
+		l = double(i);
+		buff += ((l+2)*AMP[l] + l*AMP[l+14] - l*AMP[l+8] + (l+2)*AMP[l+22])*(P(1,i,theta) + P(1,i+1,theta));
+	} 
+	buff = buff*sin(theta/2)/sqrt(2);
+	H.push_back(buff);buff = 0;
+	
+	for(int i = 0; i < 6; i++) // H5
 	{
-	S = pow(sqrt(5), Q2_degree_extr)*(C*Rt + eps*C*Rl + sqrt(2*eps*(1 + eps))*Rtl*cos(phi*M_PI/180)*C + eps*C*Rtt*cos(phi*M_PI/90) + polarization*C*sqrt(2*eps*(1 - eps))*Rtl2*sin(phi*M_PI/180))/pow(sqrt(Q2), Q2_degree_extr);
-	} else 
+		l = double(i);
+		buff += (l+1)*(AMP[l+28] + AMP[l+36])*(P(1,i,theta) - P(1,i+1,theta));
+	} 
+	buff = buff*cos(theta/2)*sqrt(Q2)/k_mod(W,Q2);
+	H.push_back(buff);buff = 0;
+	
+	for(int i = 0; i < 6; i++) // H6
 	{
-		S = C*Rt + eps*C*Rl + sqrt(2*eps*(1 + eps))*Rtl*cos(phi*M_PI/180)*C + eps*C*Rtt*cos(phi*M_PI/90) + polarization*C*sqrt(2*eps*(1 - eps))*Rtl2*sin(phi*M_PI/180);
-	}
+		l = double(i);
+		buff += (l+1)*(AMP[l+28] - AMP[l+36])*(P(1,i,theta) + P(1,i+1,theta));
+	} 
+	buff = buff*sin(theta/2)*sqrt(Q2)/k_mod(W,Q2);
+	H.push_back(buff); 
+	
+	AMP.clear();
+	return H;
+}
 
-	Gamma_flux = (E0 - nu)*(W*W - mp*mp)/(137*4*M_PI*M_PI*mp*E0*(1 - eps)*Q2); 
+double Section(const double& W,  const double& Q2, const double& theta,  const double& phi)
+{
+	double S_t, S_l, S_tt, S_lt, S_lt_pr, S, Gamma_flux, eps, nu, L(0.14817); 
+	vector<complex<double>> H;
+	
+	nu =  (W*W + Q2 - m_p*m_p)/(2*m_p);
+	eps = 1/(1 + 2*(nu*nu + Q2)/(4*(E0 - nu)*E0 - Q2));		
+	Gamma_flux = (E0 - nu)*(W*W - m_p*m_p)/(137*4*M_PI*M_PI*m_p*E0*(1 - eps)*Q2);
+	
+	H = Helicity_amplitudes(W, Q2, theta);
+	
+	S_t = pow(L, 2)*q(W)*(abs(H[0])*abs(H[0]) + abs(H[1])*abs(H[1]) + abs(H[2])*abs(H[2]) + abs(H[3])*abs(H[3]))/(2*k(W));
+	S_l = pow(L, 2)*q(W)*(abs(H[4])*abs(H[4]) + abs(H[5])*abs(H[5]))/k(W);
+	S_tt = pow(L, 2)*q(W)*real(H[2]*conj(H[1]) - H[3]*conj(H[0]))/k(W);
+	S_lt = -pow(L, 2)*q(W)*real((H[0] - H[3])*conj(H[4]) + (H[1] + H[2])*conj(H[5]))/(sqrt(2)*k(W));
+	S_lt_pr = -pow(L, 2)*q(W)*imag((H[0] - H[3])*conj(H[4]) + (H[1] + H[2])*conj(H[5]))/(sqrt(2)*k(W));
 
-	//S = Gamma_flux*S;
+	S = S_t + eps*S_l + eps*S_tt*cos(2*phi) + sqrt(2*eps*(1+eps))*S_lt*cos(phi) + double(h)*S_lt_pr*sin(phi); 
 
-	Mp.clear(); Mm.clear(); Ep.clear(); Em.clear(); Lp.clear(); Lm.clear(); 
-
+	S = Gamma_flux*S; 
+	
 	return S;
 }
 
@@ -285,541 +679,531 @@ vector<double> Coefficients_lin(const double& x1, const double& y1, const double
 {
 	vector<double> Abc(2);
 
-	Abc[0] = (y1 - y2)/(x1 - x2); 
-	Abc[1] = (x1*y2 - y1*x2)/(x1 - x2); 
+	Abc[0] = (y1 - y2)/(x1 - x2);
+	Abc[1] = (x1*y2 - y1*x2)/(x1 - x2);
 
 	return Abc;
 }
 
-double Linear(vector<vector<double>>& V, const double& W,  const double& Q2, const double& theta,  const double& phi, const double& E0)
+double Linear(const double& W,  const double& Q2, const double& theta,  const double& phi)
 {
 	double S; vector<double> ab;
-	double W_min, W_max, Q2_min, Q2_max, S1, S2, S3, S4, S_1, S_2;
-	vector<double> buff1, buff2, buff3, buff4;
+	double W_min_d, W_max_d, Q2_min_d, Q2_max_d, S1, S2, S3, S4, S_1, S_2;
 
-	W_min = floor(W*100)/100;
-	W_max = ceil(W*100)/100;
-	Q2_min = floor(Q2*20)/20;
-	Q2_max = ceil(Q2*20)/20;
+	W_min_d = floor(W*100)/100;
+	W_max_d = ceil(W*100)/100;
+	Q2_min_d = floor(Q2*20)/20;
+	Q2_max_d = ceil(Q2*20)/20;
 
-	int i1, i2, i3, i4;			
+	S1 = Section(W_min_d, Q2_min_d, theta, phi);
+	S2 = Section(W_min_d, Q2_max_d, theta, phi); 
+	S3 = Section(W_max_d, Q2_min_d, theta, phi);
+	S4 = Section(W_max_d, Q2_max_d, theta, phi); 
 	
-	i1 = (W_min - 1.08)*100 + Q2_min*20*93;
-	i2 = (W_min - 1.08)*100 + Q2_max*20*93;
-	i3 = (W_max - 1.08)*100 + Q2_min*20*93;
-	i4 = (W_max - 1.08)*100 + Q2_max*20*93;		
-
-	for(int j = 0; j < V[i1].size(); j++)
+	if(S1 == S3){S_1 = S1;}
+	else
 	{
-		buff1.push_back(V[i1][j]);
-	}
-
-	for(int j = 0; j < V[i2].size(); j++)
-	{
-		buff2.push_back(V[i2][j]);
-	}
-
-	for(int j = 0; j < V[i3].size(); j++)
-	{
-		buff3.push_back(V[i3][j]);
-	}
-
-	for(int j = 0; j < V[i4].size(); j++)
-	{
-		buff4.push_back(V[i4][j]);
-	}
-
-	S1 = Sections(buff1, theta, W_min, Q2_min, phi, E0);
-	S2 = Sections(buff2, theta, W_min, Q2_max, phi, E0);
-	S3 = Sections(buff3, theta, W_max, Q2_min, phi, E0);
-	S4 = Sections(buff4, theta, W_max, Q2_max, phi, E0); 
-
-	buff1.clear();
-	buff2.clear();
-	buff3.clear();
-	buff4.clear();
-
-	ab = Coefficients_lin(W_min, S1, W_max, S3);
-	S_1 = ab[0]*W + ab[1]; ab.clear();
-	ab = Coefficients_lin(W_min, S2, W_max, S4);
-	S_2 = ab[0]*W + ab[1]; ab.clear();
-	ab = Coefficients_lin(Q2_min, S_1, Q2_max, S_2);
-	S = ab[0]*Q2 + ab[1]; ab.clear();	
+		ab = Coefficients_lin(W_min, S1, W_max, S3);
+		S_1 = ab[0]*W + ab[1]; ab.clear();	
+	}  
 	
-	if(S1 == S3){return S3;}  
-	
-//S = ((S4 - S3 - S2 + S1)*(Q2 - Q2_min)/(Q2_max - Q2_min) + S3 - S1)*(W - W_min)/(W_max - W_min) + (S2 - S1)*(Q2 - Q2_min)/(Q2_max - Q2_min) + S1;
+	if(S2 == S4){S_2 = S2;}
+	else
+	{
+		ab = Coefficients_lin(W_min, S2, W_max, S4);
+		S_2 = ab[0]*W + ab[1]; ab.clear();	
+	}
+		
+	if(S_1 == S_2){return S_1;}
+	else
+	{
+		ab = Coefficients_lin(Q2_min, S_1, Q2_max, S_2);
+		S = ab[0]*Q2 + ab[1]; ab.clear(); 	
+	}
 
 	return S;
 }
 
-double Section_transition(vector<vector<double>>& V, double& W, double& Q2, const double& theta,  const double& phi, const double& E0)
+double Section_int(const double& W, const double& Q2, const double& E_ini)
 {
-	double Si; int index; vector<double> buff;
-
-	index = (W - 1.08)*100 + Q2*20*93;
-
-	for(int j = 0; j < V[index].size(); j++)
-	{
-		buff.push_back(V[index][j]);
-	}
-
-	Si = Sections(buff, theta, W, Q2, phi, E0);
-
-	buff.clear();
-
-	return Si;
-}
-
-vector<double> Coefficients(const double& x1, const double& y1, const double& x2, const double& y2, const double& x3, const double& y3)
-{
-	vector<double> Abc(3); double det;
-
-	det = (x2 - x3)*(x1*x1 - x1*(x2 + x3) + x2*x3);
-
-	Abc[0] = (y1*(x2 - x3) + y2*(x3 - x1) + y3*(x1 - x2))/det; 
-	Abc[1] = (y1*(x3*x3 - x2*x2) + y2*(x1*x1 - x3*x3) + y3*(x2*x2 - x1*x1))/det;  
-	Abc[2] = (y1*x2*x3*(x2 - x3) + y2*x1*x3*(x3 - x1) + y3*x1*x2*(x1 - x2))/det; 
-
-	return Abc;
-}
-
-double Quadratic(vector<vector<double>>& V, const double& W,  const double& Q2, const double& theta,  const double& phi, const double& E0)
-{
-	double S, W_1, W_2, W_3, Q2_1, Q2_2, Q2_3, S1, S2, S3;
-	vector<double> S_i(9); vector<double> abc;
-
-	W_1 = floor(W*100)/100;
-	W_2 = ceil(W*100)/100;
-	Q2_1 = floor(Q2*20)/20;
-	Q2_2 = ceil(Q2*20)/20;
-
-	if(Q2_2 == 11)
-	{
-		Q2_3 = 11;
-		Q2_2 -= 0.05;		
-		Q2_1 -= 0.05;
-	} else {Q2_3 = Q2_2 + 0.05;}
-
-	if(W_2 == 2)
-	{
-		W_3 = 2;
-		W_2 -= 0.01;		
-		W_1 -= 0.01;
-	} else {W_3 = W_2 + 0.01;} 
-
-	S_i[0] = Section_transition(V, W_1, Q2_1, theta, phi, E0);
-	S_i[1] = Section_transition(V, W_2, Q2_1, theta, phi, E0);
-	S_i[2] = Section_transition(V, W_3, Q2_1, theta, phi, E0);
-
-	S_i[3] = Section_transition(V, W_1, Q2_2, theta, phi, E0);
-	S_i[4] = Section_transition(V, W_2, Q2_2, theta, phi, E0);
-	S_i[5] = Section_transition(V, W_3, Q2_2, theta, phi, E0);
-
-	S_i[6] = Section_transition(V, W_1, Q2_3, theta, phi, E0);
-	S_i[7] = Section_transition(V, W_2, Q2_3, theta, phi, E0);
-	S_i[8] = Section_transition(V, W_3, Q2_3, theta, phi, E0); 
-
-	abc = Coefficients(W_1, S_i[0], W_2, S_i[1], W_3, S_i[2]);
-	S1 = abc[0]*W*W + abc[1]*W + abc[2]; abc.clear();
-
-	abc = Coefficients(W_1, S_i[3], W_2, S_i[4], W_3, S_i[5]);
-	S2 = abc[0]*W*W + abc[1]*W + abc[2]; abc.clear();
-
-	abc = Coefficients(W_1, S_i[6], W_2, S_i[7], W_3, S_i[8]);
-	S3 = abc[0]*W*W + abc[1]*W + abc[2]; abc.clear();
-
-	abc = Coefficients(Q2_1, S1, Q2_2, S2, Q2_3, S3);
-	S = abc[0]*Q2*Q2 + abc[1]*Q2 + abc[2]; abc.clear();	
+	double nu, eps, Gamma_flux;
 	
-	S_i.clear(); 
+	nu =  (W*W + Q2 - m_p*m_p)/(2*m_p);
+	eps = 1/(1 + 2*(nu*nu + Q2)/(4*(E_ini - nu)*E_ini - Q2));		
+	Gamma_flux = (E_ini - nu)*(W*W - m_p*m_p)/(137*4*M_PI*M_PI*m_p*E_ini*(1 - eps)*Q2);
+	
+	if(isnan(Gamma_flux) or isnan(eps)){return 0;}
+	
+	for(auto i:data_interp)
+	{
+		if(W == i[0] and Q2 == i[1])
+		{
+			if(isnan(Gamma_flux*(i[2] + eps*i[3]))){cout << Gamma_flux*(i[2] + eps*i[3]) << "\n" << endl;}
+			return Gamma_flux*(i[2] + eps*i[3]);			
+		}
+	}	
+	return 0;
+}
 
+double Section_interp_int(const double& W, const double& Q2, const double& E_ini)
+{
+	double S; vector<double> ab;
+	double W_min_d, W_max_d, Q2_min_d, Q2_max_d, S1, S2, S3, S4, S_1, S_2;
+
+	W_min_d = floor(W*100)/100;
+	W_max_d = ceil(W*100)/100;
+	Q2_min_d = floor(Q2*20)/20;
+	Q2_max_d = ceil(Q2*20)/20;
+
+	S1 = Section_int(W_min_d, Q2_min_d, E_ini); 
+	S2 = Section_int(W_min_d, Q2_max_d, E_ini); 
+	S3 = Section_int(W_max_d, Q2_min_d, E_ini);  
+	S4 = Section_int(W_max_d, Q2_max_d, E_ini); 
+	
+	if(S1 == 0 or S2 == 0 or S3 == 0 or S4 == 0)
+	{
+		return 0;
+	}
+	
+	if(S1 == S3){S_1 = S1;}
+	else
+	{
+		ab = Coefficients_lin(W_min, S1, W_max, S3);
+		S_1 = ab[0]*W + ab[1]; ab.clear(); 	
+	}  
+	
+	if(S2 == S4){S_2 = S2;}
+	else
+	{
+		ab = Coefficients_lin(W_min, S2, W_max, S4);
+		S_2 = ab[0]*W + ab[1]; ab.clear();	
+	}
+		
+	if(S_1 == S_2){return S_1;}
+	else
+	{
+		ab = Coefficients_lin(Q2_min, S_1, Q2_max, S_2);
+		S = ab[0]*Q2 + ab[1]; ab.clear(); 	
+	}
+	
+	if(isnan(S))
+	{
+		return S_2;
+	}
+	
 	return S;
 }
 
-void All(vector<vector<double>>& V, const int& FileNumber)
+double Spence(const double& x)
 {
-	double W, Q2, theta, phi, S(0), S1, P(0), Ep, Epi, p, mp(0.93827), mpi(0.13498), nu, ang1, ang2, weight(0), z, x, y, W_1, Q2_1, theta_1, phi_1; 
-	int v(0); double fff; bool trigger(true), decision; double ratio; double acceptance_rate(1.0); int acc_r(0);
-
-	double E0, W_min_d, W_max_d, Q2_min_d, Q2_max_d; int N, Hist, FileNumberAll, decay_m;
-	E0 = Settings[0];		N = Settings_mode[0];
-	W_min_d = Settings[1];		Hist = Settings_mode[1];
-	W_max_d = Settings[2];		FileNumberAll = Settings_mode[2];
-	Q2_min_d = Settings[3];		decay_m = Settings_mode[3];
-	Q2_max_d = Settings[4];
+	double result(0), S1(1), S2;
 	
+	for(double iter = x/10; iter <= x; iter += x/10)
+	{
+		S2 = -log(abs(1 - iter))/iter;
+		result += (S1 + S2)*x/20;
+		S1 = S2;
+	}
 	
-	TLorentzVector e, adron, meson, gamma1, gamma2; 
+	return result;
+}
 
-	TVector3 beta;
+double delta_r(const double& W, const double& Q2)
+{
+	TLorentzVector s, p;
+	double nu =  (W*W + Q2 - m_p*m_p)/(2*m_p);
+	double E_out = E0 - nu;
+	
+	p.SetPxPyPzE( (E0 - nu)*sqrt(1 - pow(1 - Q2/(2*E0*(E0 - nu)),2)), 0, (E0 - nu)*(1 - Q2/(2*E0*(E0 - nu))), E0 - nu);
+	s.SetPxPyPzE(0, 0, E0, E0);
+	
+	return -(28/9 - 13*log(2*(s*p)/(m_e*m_e))/6 + (log(E0/delta) + log(E_out/delta))*(log(2*(s*p)/(m_e*m_e)) - 1) - Spence(-nu/E_out) - Spence(nu/E0))/(M_PI*137);
+}
 
-	char FileName[100];
+double ts(const double& W, const double& Q2, const double& iter)
+{
+	return (0.5*(1 + pow(iter/E0, 2))*log(Q2/(m_e*m_e)) - iter/E0)/(M_PI*137);
+}
 
-	if(Settings_mode[3] == 1 or Settings_mode[3] == 0)
+double tp(const double& W, const double& Q2, const double& iter)
+{
+	double nu =  (W*W + Q2 - m_p*m_p)/(2*m_p);
+	double E_out = E0 - nu;
+	
+	return (0.5*(1 + pow(E_out/iter, 2))*log(Q2/(m_e*m_e)) - E_out/iter)/(M_PI*137);
+}
+
+double R1(const double& W, const double& Q2)
+{
+	return Section_interp_int(W, Q2, E0)*exp(delta_r(W, Q2));
+}
+
+double R2(const double& W, const double& Q2) 
+{
+	double result(0), S1, S2, W_, Es_min;
+	double nu =  (W*W + Q2 - m_p*m_p)/(2*m_p);
+	
+	if(channel){Es_min = (m_pi0*m_pi0 + 2*m_p*m_pi0 + 2*m_p*(E0 - nu))/(2*m_p - Q2/E0);}
+	else{Es_min = (m_pip*m_pip + 2*m_n*m_pip + 2*m_p*(E0 - nu))/(2*m_p - Q2/E0);}
+
+	W_ = sqrt(m_p*m_p - Q2*Es_min/E0 + 2*(Es_min - E0 + nu)*m_p);
+	
+	if(isnan(W_))
 	{
-		sprintf(FileName,"pi0p_W_%g_%g_Q2_%g_%g_(%i).dat", W_min_d, W_max_d, Q2_min_d, Q2_max_d, FileNumber);
-	} else 
+		S1 = 0;
+	} else
 	{
-		sprintf(FileName,"pin_W_%g_%g_Q2_%g_%g_(%i).dat", W_min_d, W_max_d, Q2_min_d, Q2_max_d, FileNumber);
-		mpi = 0.13957; mp = 0.93957;
+		S1 = Section_interp_int(W_, Q2*Es_min/E0, Es_min)*ts(W, Q2, Es_min)/(E0 - Es_min);	
+	}
+
+	for(double iter = Es_min + (E0 - delta - Es_min)/10; iter <= E0 - delta; iter += (E0 - delta - Es_min)/10)
+	{
+		W_ = sqrt(m_p*m_p - Q2*iter/E0 + 2*(iter - E0 + nu)*m_p);
+		if(isnan(W_))
+		{
+			S2 = 0;
+			result += (S1 + S2)*(E0 - delta - Es_min)/20;
+			S1 = S2; continue;
+		}
+		
+		if(W_ > 2.0 or Q2*iter/E0 > 5.0)
+		{
+			if(Q2 < Q2_line){Q2_line = Q2;}
+			if(W < W_line){W_line = W;} 
+		}
+		
+		if(W_ < 2.0 and Q2*iter/E0 < 5.0 and W_ > 1.08)
+		{
+			S2 = Section_interp_int(W_, Q2*iter/E0, iter)*ts(W, Q2, iter)/(E0 - iter); 
+		} else
+		{
+			S2 = 0;
+		}
+	
+		result += (S1 + S2)*(E0 - delta - Es_min)/200;
+		S1 = S2;
+	}
+	
+	return result;
+}
+
+double R3(const double& W, const double& Q2) 
+{
+	double result(0), S1, S2, W_, Ep_max;
+	double nu =  (W*W + Q2 - m_p*m_p)/(2*m_p);
+	
+	if(channel){Ep_max = (-m_pi0*m_pi0 - 2*m_p*m_pi0 + 2*m_p*E0)/(2*m_p + Q2/(E0 - nu));}
+	else{Ep_max = (-m_pip*m_pip - 2*m_n*m_pip + 2*m_p*E0)/(2*m_p + Q2/(E0 - nu));}
+
+	W_ = sqrt(m_p*m_p - Q2*(E0 - nu + delta)/(E0 - nu) + 2*(nu - delta)*m_p);
+	
+	if(isnan(W_))
+	{
+		S1 = 0;
+	} else
+	{
+		S1 = Section_interp_int(W_, Q2*(E0 - nu + delta)/(E0 - nu), E0)*tp(W, Q2, E0 - nu + delta)/delta;	
 	}	
 
-	cout << "\n\tThe name of output file will be " << FileName << endl;
-
-	ofstream File;
-
-	File.open(FileName); 
-
-	while(v < N)
+	for(double iter = E0 - nu + delta + (Ep_max - E0 + nu - delta)/10; iter <= Ep_max; iter += (Ep_max - E0 + nu - delta)/10)
 	{
-		if(trigger)
+		W_ = sqrt(m_p*m_p - Q2*iter/(E0 - nu) + 2*(E0 - iter)*m_p);
+		
+		if(isnan(W_))
 		{
-			theta = fRand(0, 180); 
-			phi = fRand(0, 360); 
-			W = fRand(W_min_d, W_max_d);
-			Q2 = fRand(Q2_min_d, Q2_max_d);
-
-			if(Settings_mode[4] == 0)
-			{
-				S = Linear(V, W, Q2, theta, phi, E0);
-			} else if(Settings_mode[4] == 1)
-			{
-				S = Quadratic(V, W, Q2, theta, phi, E0);
-			}
+			S2 = 0;
+			result += (S1 + S2)*(Ep_max - E0 + nu - delta)/20;
+			S1 = S2; continue;
 		}
-
-		if(weight_mode == 0)
+		
+		if(W_ > 2.0 or Q2*iter/(E0 - nu) > 5.0)
 		{
-			P = 0.00000000001*(rand() % 100000000000); 
-		} else if(weight_mode == 1) 
-		{
-			weight = S; P = 0;
-		} else if(weight_mode == 2) 
-		{
-			trigger = false;
-			theta_1 = fRand(0, 180); 
-			phi_1 = fRand(0, 360); 
-			W_1 = fRand(W_min_d, W_max_d);
-			Q2_1 = fRand(Q2_min_d, Q2_max_d);
-
-			if(Settings_mode[4] == 0)
-			{
-				S1 = Linear(V, W_1, Q2_1, theta_1, phi_1, E0);
-			} else if(Settings_mode[4] == 1)
-			{
-				S1 = Quadratic(V, W_1, Q2_1, theta_1, phi_1, E0);
-			}
-
-			ratio = S1/S;
-
-			P = mmin(ratio);
-
-			decision = attempt(P); P = 0; 
-
-			if(decision)
-			{
-				acc_r++;
-				theta = theta_1; 
-				phi = phi_1; 
-				W = W_1;
-				Q2 = Q2_1;
-				S = S1;
-			}
-			
+			if(Q2 < Q2_line){Q2_line = Q2;}
+			if(W < W_line){W_line = W;} 
 		}
-
-		if((S/60) >= P) //
+		
+		if(W_ < 2.0 and Q2*iter/(E0 - nu) < 5.0 and W_ > 1.08)
 		{
-			v++; acceptance_rate = double(acc_r)/double(v);
-
-			if(length != 0)
-			{
-				z = 0.5*fRand(-length, length);
-			} else { z = 0;}
-
-			if(Radius_c != 0)
-			{
-				x = Radius_c*2; y = Radius_c*2;
-				while(x*x + y*y > Radius_c*Radius_c)
-				{
-					x = fRand(-Radius_c, Radius_c);
-					y = fRand(-Radius_c, Radius_c);
-				}
-			} else { x = 0; y = 0;}
-			
-			if(Hist == 1)
-			{
-				h1 -> Fill(W, Q2);
-				h3 -> Fill(W);
-				h4 -> Fill(Q2); fff = cos(theta*M_PI/180);
-				h5 -> Fill(phi,fff);
-			}
+			S2 = Section_interp_int(W_, Q2*iter/(E0 - nu), E0)*tp(W, Q2, iter)/(iter - E0 + nu); 
+		} else
+		{
+			S2 = 0;
+		}
+		
+		result += (S1 + S2)*(Ep_max - E0 + nu - delta)/200;
+		S1 = S2;
+	}
 	
-			if((100*v)%N == 0 and weight_mode != 2)
-			{
-				cout << " " << 100*v/N << "%\tFile " << FileNumber << " of " << FileNumberAll << "\r" << flush;
-			}
-			
-			if((100*v)%N == 0 and weight_mode == 2)
-			{
-				cout << " " << 100*v/N << "%\tFile " << FileNumber << " of " << FileNumberAll;
-				cout << "\tAcceptance rate: " << acceptance_rate << "\r" << flush;
-			}			
+	return result;
+}
 
-			Epi = (W*W + mpi*mpi - mp*mp)/(2*W);
-			Ep = (W*W + mp*mp - mpi*mpi)/(2*W);
-			p = sqrt(Epi*Epi - mpi*mpi);
-
-			nu =  (W*W + Q2 - mp*mp)/(2*mp);
-
-			ang1 = fRand(0, 180); 
-			ang2 = fRand(0, 360);
-			
-	meson.SetPxPyPzE(p*cos(phi*M_PI/180)*sin(theta*M_PI/180) ,p*sin(phi*M_PI/180)*sin(theta*M_PI/180) ,p*cos(theta*M_PI/180) , Epi);
-	adron.SetPxPyPzE(-p*cos(phi*M_PI/180)*sin(theta*M_PI/180) ,-p*sin(phi*M_PI/180)*sin(theta*M_PI/180) ,-p*cos(theta*M_PI/180) , Ep);
-	gamma1.SetPxPyPzE(mpi*cos(ang2*M_PI/180)*sin(ang1*M_PI/180)/2 ,mpi*sin(ang2*M_PI/180)*sin(ang1*M_PI/180)/2 ,mpi*cos(ang1*M_PI/180)/2 ,mpi/2);
-gamma2.SetPxPyPzE(-mpi*cos(ang2*M_PI/180)*sin(ang1*M_PI/180)/2 ,-mpi*sin(ang2*M_PI/180)*sin(ang1*M_PI/180)/2 ,-mpi*cos(ang1*M_PI/180)/2 ,mpi/2);
-
-			beta.SetXYZ( 0., 0., p/Epi);
-			gamma1.Boost(beta);
-			gamma2.Boost(beta);
-
-			gamma1.RotateY(theta*M_PI/180);
-			gamma2.RotateY(theta*M_PI/180);
-			gamma1.RotateZ(phi*M_PI/180); 
-			gamma2.RotateZ(phi*M_PI/180);			
-
-			beta.SetXYZ( 0., 0., sqrt(nu*nu + Q2)/(nu + mp));
-
-			adron.Boost(beta);
-			meson.Boost(beta);
-			gamma1.Boost(beta);
-			gamma2.Boost(beta);
-
-      			adron.RotateY(-acos((Q2 + 2*E0*nu)/(2*E0*sqrt(nu*nu + Q2))));
-			meson.RotateY(-acos((Q2 + 2*E0*nu)/(2*E0*sqrt(nu*nu + Q2))));
-			gamma1.RotateY(-acos((Q2 + 2*E0*nu)/(2*E0*sqrt(nu*nu + Q2))));
-			gamma2.RotateY(-acos((Q2 + 2*E0*nu)/(2*E0*sqrt(nu*nu + Q2))));
-
-			e.SetPxPyPzE( (E0 - nu)*sqrt(1 - pow(1 - Q2/(2*E0*(E0 - nu)),2)), 0, (E0 - nu)*(1 - Q2/(2*E0*(E0 - nu))), E0 - nu);
-
-			ang2 = fRand(0, 360);
+double Gen_omega_init(const double& W, const double& Q2)
+{
+	double Ep = E0 - (W*W + Q2 - m_p*m_p)/(2*m_p);
+	double omega_max, rho(1.0), Uni(2.0), omega;
+		
+	if(channel)
+	{
+		omega_max = E0 - (m_pi0*m_pi0 + 2*m_p*m_pi0 + 2*m_p*Ep)/(2*m_p - Q2/E0);
+	} else
+	{
+		omega_max = E0 - (m_pip*m_pip + 2*m_p*m_pip + 2*m_p*Ep)/(2*m_p - Q2/E0);
+	}	
 	
-			adron.RotateZ(ang2*M_PI/180);
-			meson.RotateZ(ang2*M_PI/180);
-			gamma1.RotateZ(ang2*M_PI/180);
-			gamma2.RotateZ(ang2*M_PI/180);
-			e.RotateZ(ang2*M_PI/180);
+	omega = fRand(delta, omega_max);
+	rho = delta*(0.5*(1 + pow(1 - omega/E0, 2))*log(Q2/(m_e*m_e)) - 1 + omega/E0)/(omega*(0.5*(1 + pow(1 - delta/E0, 2))*log(Q2/(m_e*m_e)) - 1 + delta/E0));
+	Uni = fRand(0.0, 1.0);	
+	
+	if(values_rad[0] > omega_max)
+	{
+		values_rad[0] = fRand(delta, omega_max);
+		values_rad[1] = delta*(0.5*(1 + pow(1 - values_rad[0]/E0, 2))*log(Q2/(m_e*m_e)) - 1 + values_rad[0]/E0)/(values_rad[0]*(0.5*(1 + pow(1 - delta/E0, 2))*log(Q2/(m_e*m_e)) - 1 + delta/E0));
+	}
+	
+	if(Uni < rho/values_rad[1])
+	{
+		values_rad[0] = omega;
+		values_rad[1] = rho;
+		return omega;
+	}
+	else
+	{
+		return values_rad[0];
+	}
+}
 
-			if(decay_m == 1)
-			{
-	File << 4 << " " << 0 << " " << 0 << " " << 0 << " " << polarization << " " << 11 << " " << E0 << " " << 2212 << " " << 0 << " " << weight << endl;
-File << 0 << " " << 0 << " " << 0 << " " << 11 << " " << 0 << " " << 0 << " " <<  e.Px() << " " << e.Py() << " " << e.Pz() << " " << e.E() << " " << 0.0005 << " " << x << " " << y << " " << z << endl;
-File << 0 << " " << 0 << " " << 0 << " " << 2212 << " " << 0 << " " << 0 << " " <<  adron.Px() << " " << adron.Py() << " " << adron.Pz() << " " << adron.E() << " " << mp << " " << x << " " << y << " " << z << endl;
-File << 0 << " " << 0 << " " << 0 << " " << 22 << " " << 0 << " " << 0 << " " <<  gamma1.Px() << " " << gamma1.Py() << " " << gamma1.Pz() << " " << gamma1.E() << " " << 0 << " " << x << " " << y << " " << z << endl;
-File << 0 << " " << 0 << " " << 0 << " " << 22 << " " << 0 << " " << 0 << " " <<  gamma2.Px() << " " << gamma2.Py() << " " << gamma2.Pz() << " " << gamma2.E() << " " << 0 << " " << x << " " << y << " " << z << endl;
-			} else if(decay_m == 0)
-			{
-	File << 3 << " " << 0 << " " << 0 << " " << 0 << " " << polarization << " " << 11 << " " << E0 << " " << 2212 << " " << 0 << " " << weight << endl;
-			
-File << 0 << " " << 0 << " " << 0 << " " << 11 << " " << 0 << " " << 0 << " " <<  e.Px() << " " << e.Py() << " " << e.Pz() << " " << e.E() << " " << 0.0005 << " " << x << " " << y << " " << z << endl;
-File << 0 << " " << 0 << " " << 0 << " " << 2212 << " " << 0 << " " << 0 << " " <<  adron.Px() << " " << adron.Py() << " " << adron.Pz() << " " << adron.E() << " " << mp << " " << x << " " << y << " " << z << endl;
-File << 0 << " " << 0 << " " << 0 << " " << 111 << " " << 0 << " " << 0 << " " <<  meson.Px() << " " << meson.Py() << " " << meson.Pz() << " " << meson.E() << " " << mpi << " " << x << " " << y << " " << z << endl;
-			} else if(decay_m == 2)
-			{
-	File << 3 << " " << 0 << " " << 0 << " " << 0 << " " << polarization << " " << 11 << " " << E0 << " " << 2212 << " " << 0 << " " << weight << endl;
-			
-File << 0 << " " << 0 << " " << 0 << " " << 11 << " " << 0 << " " << 0 << " " <<  e.Px() << " " << e.Py() << " " << e.Pz() << " " << e.E() << " " << 0.0005 << " " << x << " " << y << " " << z << endl;
-File << 0 << " " << 0 << " " << 0 << " " << 2112 << " " << 0 << " " << 0 << " " <<  adron.Px() << " " << adron.Py() << " " << adron.Pz() << " " << adron.E() << " " << mp << " " << x << " " << y << " " << z << endl;
-File << 0 << " " << 0 << " " << 0 << " " << 211 << " " << 0 << " " << 0 << " " <<  meson.Px() << " " << meson.Py() << " " << meson.Pz() << " " << meson.E() << " " << mpi << " " << x << " " << y << " " << z << endl;
-			}			
+double Gen_omega_fin(const double& W, const double& Q2)
+{
+	double nu = (W*W + Q2 - m_p*m_p)/(2*m_p);
+	double Ep = E0 - nu;
+	double omega_max, rho(1.0), Uni(2.0), omega;
+	
+	if(channel)
+	{
+		omega_max = (2*m_p*E0 - 2*m_p*m_pi0 - m_pi0*m_pi0)/(2*m_p + Q2/Ep) - Ep;
+	} else
+	{
+		omega_max = (2*m_p*E0 - 2*m_p*m_pip - m_pip*m_pip)/(2*m_p + Q2/Ep) - Ep;
+	}	
+	
+	omega = fRand(delta, omega_max);
+	rho = delta*(0.5*(1 + pow((E0 - nu)/(E0 - nu + omega), 2))*log(Q2/(m_e*m_e)) - (E0 - nu)/(E0 - nu + omega))/(omega*(0.5*(1 + pow((E0 - nu)/(E0 - nu + delta), 2))*log(Q2/(m_e*m_e)) - (E0 - nu)/(E0 - nu + delta)));
+	Uni = fRand(0.0, 1.0);
+	
+	if(values_rad[2] > omega_max)
+	{
+		values_rad[2] = fRand(delta, omega_max);
+		values_rad[3] = delta*(0.5*(1 + pow((E0 - nu)/(E0 - nu + values_rad[2]), 2))*log(Q2/(m_e*m_e)) - (E0 - nu)/(E0 - nu + values_rad[2]))/(values_rad[2]*(0.5*(1 + pow((E0 - nu)/(E0 - nu + delta), 2))*log(Q2/(m_e*m_e)) - (E0 - nu)/(E0 - nu + delta)));
+	
+	}
+	
+	if(Uni < rho/values_rad[3])
+	{
+		values_rad[2] = omega;
+		values_rad[3] = rho;
+		return omega;
+	}
+	else
+	{
+		return values_rad[2];
+	}
+	
+	
+	return omega;
+}
+
+void generate_particle()
+{ 
+	double W, Q2, theta, phi, S, factor(1), Uni, nu;
+	double Epi, Ep, p;
+	double r1(1), r2(0), r3(0);
+	double Erad(0.0), Q2_, W_;
+	double ang1, ang2;
+	S = nan("");
+	
+	while(isnan(S))
+	{
+		W = fRand(W_min, W_max); 
+		Q2 = fRand(Q2_min, Q2_max); 
+		theta = fRand(0, M_PI);
+		phi = fRand(0, 2*M_PI);
+		
+		S = Linear(W, Q2, theta, phi);	
+	}
+	
+	W_ = W;
+	Q2_ = Q2;
+	
+	if(rad_corr)
+	{
+		r1 = R1(W, Q2); if(isnan(r1)){cout << "r1" << endl;}
+		r2 = R2(W, Q2); if(isnan(r2)){cout << "r2" << endl;}
+		r3 = R3(W, Q2); if(isnan(r3)){cout << "r3" << endl;}
+		
+		factor = (r1 + r2 + r3)/Section_interp_int(W, Q2, E0); if(isnan(factor)){cout << "factor" << endl;}
+	}
+	
+	S *= factor;
+
+	if(histogram and (not isnan(S)))
+	{
+		h1 -> Fill(W, Q2, S);
+		h3 -> Fill(W, S);
+		h4 -> Fill(Q2, S); double fff = cos(theta);
+		h5 -> Fill(phi,fff, S);	
+	}	
+	
+	Event bob; Particle proxy;
+
+	bob.set_beam(E0, h);
+	bob.set_coordinates(R, L);
+	bob.set_section(S);
+	
+	Uni = fRand(0.0, 1.0);
+	nu = (W*W + Q2 - m_p*m_p)/(2*m_p);
+	
+	if(r1/(r1 + r2 + r3) < Uni and Uni <= (r1 + r2)/(r1 + r2 + r3) and rad_corr)
+	{
+		Erad = Gen_omega_init(W, Q2);
+		Q2_ = Q2*(E0 - Erad)/E0;
+		W_ = sqrt(m_p*m_p - Q2_ + 2*(- Erad + nu)*m_p);
+	}
+	
+	if((r1 + r2)/(r1 + r2 + r3) < Uni and rad_corr) 
+	{
+		int count(0);
+		W_ = nan("");
+		while(isnan(W_)) 
+		{
+			Erad = Gen_omega_fin(W, Q2);
+			Q2_ = Q2*(E0 - nu + Erad)/(E0 - nu);
+			W_ = sqrt(m_p*m_p - Q2_ + 2*(- nu + Erad)*m_p);
+			count++;
+			if(count > 5){Q2_ = Q2; W_ = W;}			
 		}
 	}
-
-	cout << "\n\tCompleted 100%" << endl;
-
-	File.close();	
-}
 	
-int main(int argc, char **argv)
-{
-	vector<vector<double>> Biggy; 
-	vector<string> VecShap; 
+	if(channel)
+	{
+		Epi = (W_*W_ + m_pi0*m_pi0 - m_p*m_p)/(2*W_);
+		Ep = (W_*W_ + m_p*m_p - m_pi0*m_pi0)/(2*W_);
+		p = sqrt(Epi*Epi - m_pi0*m_pi0);
+		
+		proxy.mass = m_p; 
+		proxy.id = 2212;
+		(proxy.p).SetPxPyPzE(-p*cos(phi)*sin(theta), -p*sin(phi)*sin(theta), -p*cos(theta), Ep);
+		bob.add_particle(proxy);
+		
+		TVector3 beta;
+		ang1 = fRand(0, M_PI);
+		ang2 = fRand(0, 2*M_PI);
+		
+		beta.SetXYZ( 0., 0., p/Epi);
+		
+		proxy.mass = 0; 
+		proxy.id = 22;
+		(proxy.p).SetPxPyPzE(m_pi0*cos(ang2)*sin(ang1)/2 ,m_pi0*sin(ang2)*sin(ang1)/2 ,m_pi0*cos(ang1)/2 ,m_pi0/2);
+		(proxy.p).Boost(beta);
+		(proxy.p).RotateY(theta);
+		(proxy.p).RotateZ(phi);
+		bob.add_particle(proxy);
+
+		(proxy.p).SetPxPyPzE(-m_pi0*cos(ang2)*sin(ang1)/2 ,-m_pi0*sin(ang2)*sin(ang1)/2 ,-m_pi0*cos(ang1)/2 ,m_pi0/2);
+		(proxy.p).Boost(beta);
+		(proxy.p).RotateY(theta);
+		(proxy.p).RotateZ(phi);
+		bob.add_particle(proxy);	
+	}
+	else
+	{
+		Epi = (W_*W_ + m_pip*m_pip - m_n*m_n)/(2*W_);
+		Ep = (W_*W_ + m_n*m_n - m_pip*m_pip)/(2*W_);
+		p = sqrt(Epi*Epi - m_pip*m_pip);
+		
+		proxy.mass = m_n; 
+		proxy.id = 2112;
+		(proxy.p).SetPxPyPzE(-p*cos(phi)*sin(theta), -p*sin(phi)*sin(theta), -p*cos(theta), Ep);
+		bob.add_particle(proxy);
+		
+		proxy.mass = m_pip; 
+		proxy.id = 211;
+		(proxy.p).SetPxPyPzE(p*cos(phi)*sin(theta), p*sin(phi)*sin(theta), p*cos(theta), Epi);
+		bob.add_particle(proxy);	
+	}	
+		
+	proxy.mass = m_e; 
+	proxy.id = 11;
+	(proxy.p).SetPxPyPzE(sqrt(E2(W)*E2(W) - m_e*m_e)*sin_2(W, Q2), 0, sqrt(E2(W)*E2(W) - m_e*m_e)*cos_2(W, Q2), E2(W));
+	bob.add_particle(proxy);
+	
+	bob.cm_to_lab(W, Q2);	
+	
+	if(rad_corr and r1/(r1 + r2 + r3) < Uni)
+	{
+		ang1 = fRand(0, M_PI);
+		ang2 = fRand(0, 2*M_PI);
+		proxy.mass = 0; 
+		proxy.id = 22;
+		(proxy.p).SetPxPyPzE(Erad*cos(ang2)*sin(ang1), Erad*sin(ang2)*sin(ang1), Erad*cos(ang1) ,Erad);
+		bob.add_particle(proxy);	
+	}
+	
+	bob.print_lund(path);
+}
+
+int main(int argc, char* argv[])
+{	
 	auto start = std::chrono::high_resolution_clock::now();
+	srand(fRand(0,100)); int counter_(500); 
 
-	cout << " ------------------------------------------------------------------- " << endl;
-	cout << "| Welcome to event builder for Pi0p and pin channels of meson       | \n| electroproduction reaction!                                       |       \n|                                                                   |\n|     Authors: Davydov M. - MSU, Physics dep.                       |\n|              Isupov E.  - MSU, SINP                               |\n|                                                   Version 5.0     |\n| https://github.com/Maksaska/pi0p-pin-generator                    |\n ------------------------------------------------------------------- " << endl;
+	input_check(argc, argv); 
+	if(rad_corr){counter_ = 10;}
 	
-	cout << endl;	
-
-	for(double& i : Settings) 
+	for(int k = 0; k < N; k++)
 	{
-		cin >> i;
-	}
-
-	cin >> polarization;
-
-	cin >> Q2_degree_extr;
-
-	cin >> length;
-
-	cin >> Radius_c;
-
-	for(int& i : Settings_mode) 
-	{
-		cin >> i;
-	}
-
-	cin >> weight_mode;
-
-	string FileName = (Settings_mode[3] == 0 or Settings_mode[3] == 1) ? "pi0p_e.csv":"pin_e.csv";
-
-	c1 -> Divide(2,2);
-
-	if(Settings[0] < 0)
-	{
-		cout << "Beam energy is below zero!" << endl;
-		return 0;
-	}
- 
-	if(Settings[1] < 1.08 or Settings[1] > 2)
-	{
-		cout << "W_min is wrong!\nChoose the other one!\n" << endl;
-		cout << "Choose the kinematic area of (W, Q^2) values in the range W: 1.08 - 2.0 GeV , Q2: 0 - 10 GeV^2" << endl;
-		return 0;
-	}
- 
-	if(Settings[2] < 1.08 or Settings[2] > 2)
-	{
-		cout << "W_max is wrong!\nChoose the other one!\n" << endl;
-		cout << "Choose the kinematic area of (W, Q^2) values in the range W: 1.08 - 2.0 GeV , Q2: 0 - 10 GeV^2" << endl;
-
-		if(Settings[2] < Settings[1])
+		generate_particle();
+		if(k % counter_ == 0)
 		{
-			cout << "Choose the bigger one!    W_max>" << Settings[1] << endl;
+			auto finish_ = std::chrono::high_resolution_clock::now();
+			std::chrono::duration<double> elapsed_ = double(N - k)*(finish_ - start)/double(k); 
+			cout << "Stand by ... " << k*100/N << "%   Time remaining: " << floor(elapsed_.count()/3600) << " h " << floor((elapsed_.count() - 3600*floor(elapsed_.count()/3600))/60) << " min " << elapsed_.count() - 60*floor(elapsed_.count()/60) << " s             \r" << flush;
 		}
-		return 0;
 	}
 
-	if(Settings[2] < Settings[1])
+	if(histogram)
 	{
-		cout << "W_max is wrong!\nChoose the bigger one!    W_max>" << Settings[1] << endl;
-		return 0;
-	}
- 
-	if(Settings[3] < 0 or Settings[3] > 10)
-	{
-		cout << "Q2_min is wrong!\nChoose the other one!\n" << endl;
-		cout << "Choose the kinematic area of (W, Q^2) values in the range W: 1.08 - 2.0 GeV , Q2: 0 - 10 GeV^2" << endl;
-		return 0;
-	}	
- 
-	if(Settings[4] < 0 or Settings[4] > 10)
-	{
-		cout << "Q2_max is wrong!\nChoose the other one!\n" << endl;
-		cout << "Choose the kinematic area of (W, Q^2) values in the range W: 1.08 - 2.0 GeV , Q2: 0 - 10 GeV^2" << endl;
+		c1 -> Divide(2 , 2);
+		
+		c1->cd(1);
+		c1->cd(1)->SetLogz();
+		h1->Draw("COL");
 
-		if(Settings[4] < Settings[3])
-		{
-			cout << "Choose the bigger one!    Q2_max >" << Settings[3] << endl;
-		}
-		return 0;
-	}
-
-	if(Settings[4] < Settings[3])
-	{
-		cout << "Choose the bigger one!    Q2_max >" << Settings[3] << endl;
-		return 0;
-	}
-
-	if(Settings_mode[0] < 0)
-	{
-		cout << "The number of generated particles can't be negative!" << endl;
-		return 0;
-	}	
-
-	cout << "Beam energy is E = " << Settings[0] << " GeV" << endl;
-	cout << "Chosen kinematic area of (W, Q^2) values is W: " << Settings[1] << " - " << Settings[2] << " GeV , Q2: " << Settings[3] << " - " << Settings[4] << " GeV^2" << endl;
-	cout << "Total amount of files: " << Settings_mode[2] << "\nHistogram need: ";
-	if(Settings_mode[1] == 1){cout << "Yes" << endl;} else {cout << "No" << endl;}
-	cout << "Interpolation mode: ";
-	if(Settings_mode[4] == 1){cout << "Biquadratic" << endl;} else {cout << "Bilinear" << endl;}
-	if(Settings_mode[3] == 1 or Settings_mode[3] == 0)
-	{
-		cout << "Channel: pi0p" << endl;
-		cout << "Pi^0 meson decay: ";
-		if(Settings_mode[3] == 1){cout << "Yes" << endl;} else {cout << "No" << endl;}
-	} else 
-	{
-		cout << "Channel: pin" << endl;
-	}	
-	
-	if(weight_mode == 0)
-	{
-		cout << "Acc/Rej method" << endl;
-	}
-	
-	if(weight_mode == 1)
-	{
-		cout << "Uniform distribution with weights" << endl;
-	}
-	
-	if(weight_mode == 2)
-	{
-		cout << "Metropolis–Hastings algorithm (MCMC)" << endl;
-	}
-	
-	cout << "Stand by...\n" << endl;	
-
-	Reading(FileName,Biggy,VecShap);
-
-	srand(time(NULL));
-
-	for(int yy = 1; yy <= Settings_mode[2]; yy++)
-	{
-		All(Biggy, yy);
-	}
-
-	if(Settings_mode[1] == 1)
-	{
+		c1->cd(2);
+		c1->cd(2)->SetLogz();
+		
 		h5->GetYaxis()->SetTitle("cos(#theta^{*})");
 		h5->GetYaxis()->SetTitleOffset(1.3);
 		h5->GetYaxis()->CenterTitle(true);
 		h5->GetXaxis()->SetTitle("#phi , grad");
-		h5->GetXaxis()->CenterTitle(true);
+		h5->GetXaxis()->CenterTitle(true);		
 
-		c1->cd(2);
-		c1->SetLogz();
 		h5->Draw("COL");
-	
-		c1->cd(1);
-		c1->SetLogz();
-		h1->Draw("COL");
-
-		//c1->cd(2);
-		//h1->Draw("SURF2");
 
 		c1->cd(3);
 		h3->Draw();
 
 		c1->cd(4);
+		c1->cd(4)->SetLogy();
 		h4->Draw();
 
-		char FileName1[100];
-
-		sprintf(FileName1,"Histograms_reg%i_degree_%g_W_%g_%g_Q2_%g_%g.jpeg", Settings_mode[3], Q2_degree_extr, Settings[1], Settings[2], Settings[3], Settings[4]);
-
-		c1 -> Print(FileName1);
-	}
-
-	Biggy.clear(); 
-	VecShap.clear(); 
-	Settings.clear(); Settings_mode.clear();
+		c1 -> Print("Histogram.jpeg");	
+	}	
 	
 	auto finish = std::chrono::high_resolution_clock::now();
 	std::chrono::duration<double> elapsed = finish - start;
-	cout << "\nElapsed time: " << elapsed.count() << " s\n";
-
+	cout << "Elapsed time: " << floor(elapsed.count()/3600) << " h " << floor((elapsed.count() - 3600*floor(elapsed.count()/3600))/60) << " min " << elapsed.count() - 60*floor(elapsed.count()/60) << " s\n";
+	
+	cout << "\nW_line = " << W_line << "\tQ2_line = " << Q2_line << endl;
+	
 	return 0;
 }
