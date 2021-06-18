@@ -1,13 +1,16 @@
-The purpose of this program is to generate the events for Pi0p an Pi+n channels of meson electroproduction reaction in the kinematic range of W:[1.08, 2] GeV and Q^2: [0, 10] GeV^2. For Q^2: [5, 10] GeV^2 the data was extrapolated. For the extrapolation the following procedure was used : All multipoles for W: 1.08 - 2 GeV and Q2: 5 - 10 GeV^2 were copied from Q^2  = 5 GeV^2 and corresponding W with sqrt(5/Q2)^(n/2) factor.
-For input data you can use the "input.txt" file. 
+# MCEGENpiN_radcorr V7b
+This V7b version of the newest MC event generator for exclusive single pion electroproduction allows you to generate a massive statistics for the large invariants' scales. Relatively fast and effective procedures in conjunction with model representations make this program a convenient and reliable choice for data analysis in particle physics.
 
-To launch the generator use "Run" or "Start" file. "Run" = "Start" + compilation 
+## What's it all about?
+One of the biggest parts of any experiments in physics is data analysis. Hadron physics with CLAS12 spectrometer gets pretty tricky when one should deal with its efficiency. This is where programs like this generator come quite handy. Not only do they allow you to restore the original cross-section, but they also can be used as an instrument for event selection development. 
 
-For input file: 
+The elaboration of this generator was carried out based on MAID representations. As a starting point, we use multipole amplitudes for the charged channels. This data is needed to evaluate the differential cross-section that we further use as weights for event generation.
 
-Enter the information you are interested in in the following order: Beam energy (GeV), left border of the range W (GeV), right border of the range W (GeV), left border of the range Q^2 (GeV^2), right border of the range Q^2 (GeV), beam polarization h(+-1, 0), n factor for the extrapolation, Length of the target in cm (the target is the cylinder), cylinder cross section radius in cm, Number of genereted events, Histogramm request(1 - Yes; 0 - No), Total amount of ".lund" files, Channel (2 - Pi+n; 1 - Pi0p + Pi0 decay; 0 - pi0p), Interpolation mode (0 - linear; 1 - quad), "weights" mode (2 - MCMC method; 1 - Flat distribution over the entire kinematic range. Weights(cross-sections = [mubr]) are being recorded in .lund file; 0 - Events are recorded taking into account the peculiarities of their distribution in the kinetic region). Enter all input data separated by a space.
+### Formalism 
+Helicity amplitudes were considered the most convenient intermediate stage of the whole data handling. Using the multipole decomposition with Legendre polynomials one can obtain Helicity amplitudes as follows:
 
-Example: 10.6 1.08 2 0 10 0 4 100 10 100000 1 1 2 0 1
+### Main idea
 
-This input stands for 10.6 GeV beam energy(beam polarization is h = 0) with the kinematic range of W:[1.08, 2] GeV and Q^2: [0, 10] GeV^2 for 100000 events, that will be recorded in 1 file "pin_1.08_2_0_5_(1).lund". Additional 2d histogram (W, Q^2) will be created. Cross-section for random bin (W, Q^2) will be calculated with the help of linear interpolation. If the extrapolation is necessary the n = 4 factor will be used. Flat distribution over the entire kinematic range. Weights are recorded in .lund file. Events were distributed evenly over the cylindrical area z: [-100/2, 100/2], x^2 + y^2: [0, 10].
+## Usage
 
+## Some histograms
