@@ -38,7 +38,27 @@ where K and k and q are respectively, the photon equivalent energy and the virtu
 
 <a href="https://www.codecogs.com/eqnedit.php?latex=\dfrac{d\sigma}{d\Omega}&space;=&space;\sigma_{T}&space;&plus;&space;\epsilon&space;\sigma_{L}&space;&plus;&space;\epsilon&space;\sigma_{TT}\cos{2\varphi}&space;&plus;&space;\sqrt{2\epsilon&space;(1&space;&plus;&space;\epsilon)}\sigma_{LT}\cos{\varphi}&space;&plus;&space;h\sqrt{2\epsilon(1&space;-&space;\epsilon)}\sigma_{LT'}\sin{\varphi}" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\dfrac{d\sigma}{d\Omega}&space;=&space;\sigma_{T}&space;&plus;&space;\epsilon&space;\sigma_{L}&space;&plus;&space;\epsilon&space;\sigma_{TT}\cos{2\varphi}&space;&plus;&space;\sqrt{2\epsilon&space;(1&space;&plus;&space;\epsilon)}\sigma_{LT}\cos{\varphi}&space;&plus;&space;h\sqrt{2\epsilon(1&space;-&space;\epsilon)}\sigma_{LT'}\sin{\varphi}" title="\dfrac{d\sigma}{d\Omega} = \sigma_{T} + \epsilon \sigma_{L} + \epsilon \sigma_{TT}\cos{2\varphi} + \sqrt{2\epsilon (1 + \epsilon)}\sigma_{LT}\cos{\varphi} + h\sqrt{2\epsilon(1 - \epsilon)}\sigma_{LT'}\sin{\varphi}" /></a>
 
+The differential cross section of the electroproduction of pions off nucleons in the one-photon approximation was used as a weight for each specific event.
+
+<a href="https://www.codecogs.com/eqnedit.php?latex=\dfrac{d\sigma}{dE_fd\Omega_{e}d\Omega}&space;=&space;\Gamma&space;\dfrac{d\sigma}{d\Omega}&space;\;\;\;\;\;\;\;\;&space;\Gamma&space;=&space;\dfrac{\alpha}{2\pi^2Q^2}\dfrac{(W^2&space;-&space;m^2)E_f}{2mE_i}\dfrac{1}{1&space;-&space;\epsilon}" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\dfrac{d\sigma}{dE_fd\Omega_{e}d\Omega}&space;=&space;\Gamma&space;\dfrac{d\sigma}{d\Omega}&space;\;\;\;\;\;\;\;\;&space;\Gamma&space;=&space;\dfrac{\alpha}{2\pi^2Q^2}\dfrac{(W^2&space;-&space;m^2)E_f}{2mE_i}\dfrac{1}{1&space;-&space;\epsilon}" title="\dfrac{d\sigma}{dE_fd\Omega_{e}d\Omega} = \Gamma \dfrac{d\sigma}{d\Omega} \;\;\;\;\;\;\;\; \Gamma = \dfrac{\alpha}{2\pi^2Q^2}\dfrac{(W^2 - m^2)E_f}{2mE_i}\dfrac{1}{1 - \epsilon}" /></a>
+
+### Radiative Corrections
+
+For RE(radiative effects) simulations the [Mo and Tsai](https://inspirehep.net/literature/52657) approach was chosen. Using the peak approximation we were able to implement the following corrections:
+  1. Weights re-evaluation according to RC
+  2. The radiative tail simulation
+  3. Outgoing rad. photon generation
+
 ### Main idea
+
+The general procedure for the event generation contains 2 parts:
+* Weight calculation
+* Particles kinematics
+
+In the first case, the program decides whether it's the soft or hard region for the RC and completes the differential cross section calculation.
+The additional factor for the weight is also calculated here. The program completes the event generation cycle with the kinematics evaluation. Thus it writes all the information about the specific event in the output file using the ["Lund"](https://gemc.jlab.org/gemc/html/documentation/generator/lund.html) format. 
+
+As a result, for each <a href="https://www.codecogs.com/eqnedit.php?latex=\{W,&space;Q^2,&space;cos(\theta),&space;\varphi\}" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\{W,&space;Q^2,&space;cos(\theta),&space;\varphi\}" title="\{W, Q^2, cos(\theta), \varphi\}" /></a> point and <a href="https://www.codecogs.com/eqnedit.php?latex=E_{beam},&space;h" target="_blank"><img src="https://latex.codecogs.com/gif.latex?E_{beam},&space;h" title="E_{beam}, h" /></a> (beam polarization) values, this program creates a bunch of outgoing particles with the appropriate kinematic values.
 
 ## Usage
 
