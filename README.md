@@ -109,7 +109,7 @@ Default settings:
 * --seed = time(NULL)
 * -h = 0
 
-## Some histograms
+## Some histograms for default options
 
 <img src="/img/W.jpeg" alt="W"/>
 <img src="/img/Q2.jpeg" alt="Q2"/>
