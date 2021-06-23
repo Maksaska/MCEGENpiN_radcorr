@@ -34,7 +34,7 @@ These amplitudes are further used for the structure functions evaluation, which 
 
 <a href="https://www.codecogs.com/eqnedit.php?latex=\sigma_{LT'}&space;=&space;-\dfrac{q}{\sqrt{2}K}Im((H_1&space;-&space;H_4)H_5^*&space;&plus;&space;(H_2&space;&plus;&space;H_3)H_6^*)" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\sigma_{LT'}&space;=&space;-\dfrac{q}{\sqrt{2}K}Im((H_1&space;-&space;H_4)H_5^*&space;&plus;&space;(H_2&space;&plus;&space;H_3)H_6^*)" title="\sigma_{LT'} = -\dfrac{q}{\sqrt{2}K}Im((H_1 - H_4)H_5^* + (H_2 + H_3)H_6^*)" /></a>
 
-where K and k and q are respectively, the photon equivalent energy and the virtual photon and pion 3-momenta in γN c.m.s. For unpolarized particles and for a longitudinally polarized electron beam, the φ-dependence of the γN → Nπ cross section can be specified in the following way:
+where K and k and q are respectively, the photon equivalent energy and the virtual photon and pion 3-momenta in <a href="https://www.codecogs.com/eqnedit.php?latex=\gamma&space;N" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\gamma&space;N" title="\gamma N" /></a> c.m.s. For unpolarized particles and for a longitudinally polarized electron beam, the φ-dependence of the <a href="https://www.codecogs.com/eqnedit.php?latex=\gamma&space;N&space;\longrightarrow&space;\pi&space;N" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\gamma&space;N&space;\longrightarrow&space;\pi&space;N" title="\gamma N \longrightarrow \pi N" /></a> cross section can be specified in the following way:
 
 <a href="https://www.codecogs.com/eqnedit.php?latex=\dfrac{d\sigma}{d\Omega}&space;=&space;\sigma_{T}&space;&plus;&space;\epsilon&space;\sigma_{L}&space;&plus;&space;\epsilon&space;\sigma_{TT}\cos{2\varphi}&space;&plus;&space;\sqrt{2\epsilon&space;(1&space;&plus;&space;\epsilon)}\sigma_{LT}\cos{\varphi}&space;&plus;&space;h\sqrt{2\epsilon(1&space;-&space;\epsilon)}\sigma_{LT'}\sin{\varphi}" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\dfrac{d\sigma}{d\Omega}&space;=&space;\sigma_{T}&space;&plus;&space;\epsilon&space;\sigma_{L}&space;&plus;&space;\epsilon&space;\sigma_{TT}\cos{2\varphi}&space;&plus;&space;\sqrt{2\epsilon&space;(1&space;&plus;&space;\epsilon)}\sigma_{LT}\cos{\varphi}&space;&plus;&space;h\sqrt{2\epsilon(1&space;-&space;\epsilon)}\sigma_{LT'}\sin{\varphi}" title="\dfrac{d\sigma}{d\Omega} = \sigma_{T} + \epsilon \sigma_{L} + \epsilon \sigma_{TT}\cos{2\varphi} + \sqrt{2\epsilon (1 + \epsilon)}\sigma_{LT}\cos{\varphi} + h\sqrt{2\epsilon(1 - \epsilon)}\sigma_{LT'}\sin{\varphi}" /></a>
 
@@ -44,10 +44,10 @@ The differential cross section of the electroproduction of pions off nucleons in
 
 ### Radiative Corrections
 
-For RE(radiative effects) simulations the [Mo and Tsai](https://inspirehep.net/literature/52657) approach was chosen. Using the peak approximation we were able to implement the following corrections:
+For RE (radiative effects) simulations the [Mo and Tsai](https://inspirehep.net/literature/52657) approach was chosen. Using the peak approximation we were able to implement the following corrections:
   1. Weights re-evaluation according to RC
   2. The radiative tail simulation
-  3. Outgoing rad. photon generation
+  3. Outgoing radiative photon generation
 
 ### Main idea
 
@@ -72,13 +72,13 @@ Options for program start:
 * --beam_energy - beam energy
 * --target_R - target cross-section radius (Keep in mind, the target is a cylinder)
 * --target_L - target length 
-* --W_min - left border for the W invariant
-* --W_max - right border for the W invariant
-* --Q2_min - left border for the Q^2 invariant
-* --Q2_max - right border for the Q^2 invariant
-* --hist - (W, Q^2), W, Q^2, and (cos(theta), phi) histograms will be created (No input value required)
-* --RC - switch for radiative correction proceedure (Enabled when entered. No input value required)
-* -n - switch for pi+n channel. (Charged pion channel is chosen when entered. No input value required)
+* --W_min - left border for the <a href="https://www.codecogs.com/eqnedit.php?latex=W" target="_blank"><img src="https://latex.codecogs.com/gif.latex?W" title="W" /></a> invariant
+* --W_max - right border for the <a href="https://www.codecogs.com/eqnedit.php?latex=W" target="_blank"><img src="https://latex.codecogs.com/gif.latex?W" title="W" /></a> invariant
+* --Q2_min - left border for the <a href="https://www.codecogs.com/eqnedit.php?latex=Q^2" target="_blank"><img src="https://latex.codecogs.com/gif.latex?Q^2" title="Q^2" /></a> invariant
+* --Q2_max - right border for the <a href="https://www.codecogs.com/eqnedit.php?latex=Q^2" target="_blank"><img src="https://latex.codecogs.com/gif.latex?Q^2" title="Q^2" /></a> invariant
+* --hist - <a href="https://www.codecogs.com/eqnedit.php?latex=(W,&space;Q^2)" target="_blank"><img src="https://latex.codecogs.com/gif.latex?(W,&space;Q^2)" title="(W, Q^2)" /></a>, <a href="https://www.codecogs.com/eqnedit.php?latex=W" target="_blank"><img src="https://latex.codecogs.com/gif.latex?W" title="W" /></a>, <a href="https://www.codecogs.com/eqnedit.php?latex=Q^2" target="_blank"><img src="https://latex.codecogs.com/gif.latex?Q^2" title="Q^2" /></a>, and <a href="https://www.codecogs.com/eqnedit.php?latex=(\cos{\theta},&space;\varphi)" target="_blank"><img src="https://latex.codecogs.com/gif.latex?(\cos{\theta},&space;\varphi)" title="(\cos{\theta}, \varphi)" /></a> histograms will be created (No input value required)
+* --RC - switch for radiative correction procedure (Enabled when entered. No input value required)
+* -n - switch for <a href="https://www.codecogs.com/eqnedit.php?latex=\pi^&plus;n" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\pi^&plus;n" title="\pi^+n" /></a> channel. (Charged pion channel is chosen when entered. No input value required)
 * -N - number of events
 * -h - beam polarization ("0" when beam is not polarized)
 
@@ -86,19 +86,19 @@ Example:
 
 ./MCEGENpiN_radcorr --beam_energy=10 --target_R=0.5 --target_L=10 --W_min=1.1 --W_max=1.8 --Q2_min=0.5 --Q2_max=2 --RC -n -N 10000
 
-The program will be started with E_beam = 10 GeV (h = 0 by default) for W:[1.1, 1.8] GeV and Q2:[0.5, 2] GeV^2 with RC mode enabled for pi+n channel. Number of generated events is 10,000. Target radius is 0.5 cm and its length is 10 cm.
+The program will be started with <a href="https://www.codecogs.com/eqnedit.php?latex=E_{beam}&space;=&space;10" target="_blank"><img src="https://latex.codecogs.com/gif.latex?E_{beam}&space;=&space;10" title="E_{beam} = 10" /></a> <a href="https://www.codecogs.com/eqnedit.php?latex=GeV" target="_blank"><img src="https://latex.codecogs.com/gif.latex?GeV" title="GeV" /></a> (h = 0 by default) for W:[1.1, 1.8] <a href="https://www.codecogs.com/eqnedit.php?latex=GeV" target="_blank"><img src="https://latex.codecogs.com/gif.latex?GeV" title="GeV" /></a> and <a href="https://www.codecogs.com/eqnedit.php?latex=Q^2" target="_blank"><img src="https://latex.codecogs.com/gif.latex?Q^2" title="Q^2" /></a>:[0.5, 2] <a href="https://www.codecogs.com/eqnedit.php?latex=GeV^2" target="_blank"><img src="https://latex.codecogs.com/gif.latex?GeV^2" title="GeV^2" /></a> with RC mode enabled for <a href="https://www.codecogs.com/eqnedit.php?latex=\pi^&plus;n" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\pi^&plus;n" title="\pi^+n" /></a> channel. Number of generated events is 10,000. Target radius is 0.5 cm and its length is 10 cm.
 
 Default settings:
-* --beam_energy = 6.5 GeV
+* --beam_energy = 6.5 <a href="https://www.codecogs.com/eqnedit.php?latex=GeV" target="_blank"><img src="https://latex.codecogs.com/gif.latex?GeV" title="GeV" /></a>
 * --target_R = 1 cm
 * --target_L = 10 cm
-* --W_min = 1.08 GeV
-* --W_max = 2 GeV
-* --Q2_min = 0.05 GeV^2
-* --Q2_max = 5 GeV^2
+* --W_min = 1.08 <a href="https://www.codecogs.com/eqnedit.php?latex=GeV" target="_blank"><img src="https://latex.codecogs.com/gif.latex?GeV" title="GeV" /></a>
+* --W_max = 2 <a href="https://www.codecogs.com/eqnedit.php?latex=GeV" target="_blank"><img src="https://latex.codecogs.com/gif.latex?GeV" title="GeV" /></a>
+* --Q2_min = 0.05 <a href="https://www.codecogs.com/eqnedit.php?latex=GeV^2" target="_blank"><img src="https://latex.codecogs.com/gif.latex?GeV^2" title="GeV^2" /></a>
+* --Q2_max = 5 <a href="https://www.codecogs.com/eqnedit.php?latex=GeV^2" target="_blank"><img src="https://latex.codecogs.com/gif.latex?GeV^2" title="GeV^2" /></a>
 * --hist Disabled
 * --RC Disabled
-* -n Disabled (Pi0p channel by default)
+* -n Disabled (<a href="https://www.codecogs.com/eqnedit.php?latex=\pi^0p" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\pi^0p" title="\pi^0p" /></a> channel by default)
 * -N = 1,000,000
 * -h = 0
 
