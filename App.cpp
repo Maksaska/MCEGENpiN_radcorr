@@ -14,6 +14,7 @@
 #include <deque>
 #include <fstream>
 #include <getopt.h>
+#include <time.h> 
 
 using namespace std;
 
@@ -24,10 +25,9 @@ TH1F* h4 = new TH1F("h4", "Histogram Q^{2}", 440, 0, 5);
 TH2* h5 = new TH2F("h5", "Histogram (#phi,cos(#theta^{*}))", 180, 0, 2*M_PI, 100, -1 , 1);
 
 double E0(6.5), R(1), L(10), W_min(1.08), W_max(2.0), Q2_min(0.05), Q2_max(5.0);
-double Q2_line(5.0), W_line(2.0);
-int h(0), N(1000000); 
+int h(0), N(1000000); double seed_(0);
 bool channel(true), method(true), histogram(false), rad_corr(false);
-string path = "pi0p.dat";
+string path = "MCEGENpiN_radcorr.dat";
 string source = "pi0p.csv";
 string source_interp = "pi0p_int.csv";
 vector<vector<double>> data, data_interp;
@@ -380,7 +380,7 @@ void Reading(string Path, vector<vector<double>>& V)
 
 void input_check(int argc, char* argv[])
 {
-	const char* short_options = "nwe:r:l:N:h:z:x:c:v:pm"; int rez; int option_index;
+	const char* short_options = "nwe:r:l:N:h:z:x:c:v:pmas:"; int rez; int option_index;
 	
 	const struct option long_options[] = {
 						{"beam_energy", required_argument, NULL, 'e'},
@@ -391,7 +391,10 @@ void input_check(int argc, char* argv[])
 	        				{"Q2_min", required_argument, NULL, 'c'},
 	        				{"Q2_max", required_argument, NULL, 'v'},
 	        				{"hist", no_argument, NULL, 'p'},
-	        				{"RC", no_argument, NULL, 'm'},
+	        				{"RC", no_argument, NULL, 'm'}, 
+	        				{"trig", required_argument, NULL, 'N'}, 
+	        				{"docker", no_argument, NULL, 'a'}, 
+	        				{"seed", required_argument, NULL, 's'}, 
 	        				{NULL, 0, NULL, 0}
 								};
 	while ((rez=getopt_long(argc, argv, short_options, long_options, &option_index)) != -1)
@@ -401,7 +404,7 @@ void input_check(int argc, char* argv[])
 			case 'n': 
 			{
 				channel = false;
-				path = "pin.dat"; 
+				path = "MCEGENpiN_radcorr.dat"; 
 				source = "pin.csv";
 				source_interp = "pin_int.csv";
 				break;
@@ -433,6 +436,10 @@ void input_check(int argc, char* argv[])
 				L = atof(optarg);
 				break;
 			};
+			case 's': {
+				seed_ = atof(optarg);
+				break;
+			};
 			case 'N': {
 				N = atoi(optarg);
 				break;
@@ -460,6 +467,12 @@ void input_check(int argc, char* argv[])
 				Q2_max = atof(optarg);
 				if(Q2_max > 5.0){Q2_max = 5.0;}
 				break;
+			};
+			case 'a': {
+				E0 = 6.5; R = 1; L = 10; W_min = 1.08; W_max = 2.0; Q2_min = 0.05; Q2_max = 5.0;
+				h = 0; N = 1000000; 
+				channel = true; method = true; histogram = false; rad_corr = false;
+				break;
 			};	
 			case '?': default: {
 				cerr << "Unkhown option" << endl;
@@ -469,7 +482,7 @@ void input_check(int argc, char* argv[])
 	};
 	
 	cout << " ------------------------------------------------------------------- " << endl;
-	cout << "| Monte Carlo event generator for exclusive pion electroproduction  | \n| with radiative corrections              \"MCEGENpiN_radcorr V7b\"   |       \n|                                                                   |\n|     Authors: Davydov M. - MSU, Physics dep.                       |\n|              Isupov E.  - MSU, SINP                               |\n|                                                                   |\n| https://github.com/Maksaska/pi0p-pin-generator                    |\n ------------------------------------------------------------------- " << endl;
+	cout << "| Monte Carlo event generator for exclusive pion electroproduction  | \n| with radiative corrections              \"MCEGENpiN_radcorr V7c\"   |       \n|                                                                   |\n|     Authors: Davydov M. - MSU, Physics dep.                       |\n|              Isupov E.  - MSU, SINP                               |\n|                                                                   |\n| https://github.com/Maksaska/pi0p-pin-generator                    |\n ------------------------------------------------------------------- " << endl;
 	
 	cout << endl;	
 	
@@ -866,12 +879,6 @@ double R2(const double& W, const double& Q2)
 			S1 = S2; continue;
 		}
 		
-		if(W_ > 2.0 or Q2*iter/E0 > 5.0)
-		{
-			if(Q2 < Q2_line){Q2_line = Q2;}
-			if(W < W_line){W_line = W;} 
-		}
-		
 		if(W_ < 2.0 and Q2*iter/E0 < 5.0 and W_ > 1.08)
 		{
 			S2 = Section_interp_int(W_, Q2*iter/E0, iter)*ts(W, Q2, iter)/(E0 - iter); 
@@ -914,12 +921,6 @@ double R3(const double& W, const double& Q2)
 			S2 = 0;
 			result += (S1 + S2)*(Ep_max - E0 + nu - delta)/20;
 			S1 = S2; continue;
-		}
-		
-		if(W_ > 2.0 or Q2*iter/(E0 - nu) > 5.0)
-		{
-			if(Q2 < Q2_line){Q2_line = Q2;}
-			if(W < W_line){W_line = W;} 
 		}
 		
 		if(W_ < 2.0 and Q2*iter/(E0 - nu) < 5.0 and W_ > 1.08)
@@ -1036,11 +1037,11 @@ void generate_particle()
 	
 	if(rad_corr)
 	{
-		r1 = R1(W, Q2); if(isnan(r1)){cout << "r1" << endl;}
-		r2 = R2(W, Q2); if(isnan(r2)){cout << "r2" << endl;}
-		r3 = R3(W, Q2); if(isnan(r3)){cout << "r3" << endl;}
+		r1 = R1(W, Q2); 
+		r2 = R2(W, Q2); 
+		r3 = R3(W, Q2); 
 		
-		factor = (r1 + r2 + r3)/Section_interp_int(W, Q2, E0); if(isnan(factor)){cout << "factor" << endl;}
+		factor = (r1 + r2 + r3)/Section_interp_int(W, Q2, E0); 
 	}
 	
 	S *= factor;
@@ -1079,7 +1080,11 @@ void generate_particle()
 			Q2_ = Q2*(E0 - nu + Erad)/(E0 - nu);
 			W_ = sqrt(m_p*m_p - Q2_ + 2*(- nu + Erad)*m_p);
 			count++;
-			if(count > 5){Q2_ = Q2; W_ = W;}			
+			if(count > 5)
+			{
+				Q2_ = Q2; W_ = W;
+				r1 = 1; r2 = 0; r3 = 0;
+			}			
 		}
 	}
 	
@@ -1120,6 +1125,16 @@ void generate_particle()
 		Ep = (W_*W_ + m_n*m_n - m_pip*m_pip)/(2*W_);
 		p = sqrt(Epi*Epi - m_pip*m_pip);
 		
+		if(isnan(p))
+		{
+			Q2_ = Q2; W_ = W;
+			r1 = 1; r2 = 0; r3 = 0;	
+		}
+		
+		Epi = (W_*W_ + m_pip*m_pip - m_n*m_n)/(2*W_);
+		Ep = (W_*W_ + m_n*m_n - m_pip*m_pip)/(2*W_);
+		p = sqrt(Epi*Epi - m_pip*m_pip);
+		
 		proxy.mass = m_n; 
 		proxy.id = 2112;
 		(proxy.p).SetPxPyPzE(-p*cos(phi)*sin(theta), -p*sin(phi)*sin(theta), -p*cos(theta), Ep);
@@ -1138,9 +1153,19 @@ void generate_particle()
 	
 	bob.cm_to_lab(W, Q2);	
 	
-	if(rad_corr and r1/(r1 + r2 + r3) < Uni)
+	if(r1/(r1 + r2 + r3) < Uni and Uni <= (r1 + r2)/(r1 + r2 + r3) and rad_corr)
 	{
-		ang1 = fRand(0, M_PI);
+		ang1 = fRand(0, M_PI*sqrt(m_e/E0)/2);
+		ang2 = fRand(0, 2*M_PI);
+		proxy.mass = 0; 
+		proxy.id = 22;
+		(proxy.p).SetPxPyPzE(Erad*cos(ang2)*sin(ang1), Erad*sin(ang2)*sin(ang1), Erad*cos(ang1) ,Erad);
+		bob.add_particle(proxy);
+	}
+	
+	if((r1 + r2)/(r1 + r2 + r3) < Uni and rad_corr) 
+	{
+		ang1 = acos(1 - Q2/(2*E0*(E0 - nu))) + fRand(-M_PI*sqrt(m_e/(E0 - nu))/2, M_PI*sqrt(m_e/(E0 - nu))/2);
 		ang2 = fRand(0, 2*M_PI);
 		proxy.mass = 0; 
 		proxy.id = 22;
@@ -1154,9 +1179,11 @@ void generate_particle()
 int main(int argc, char* argv[])
 {	
 	auto start = std::chrono::high_resolution_clock::now();
-	srand(fRand(0,100)); int counter_(500); 
+	int counter_(500); 
 
 	input_check(argc, argv); 
+	if(seed_ == 0){seed_ = time(NULL);}
+	srand(seed_);
 	if(rad_corr){counter_ = 10;}
 	
 	for(int k = 0; k < N; k++)
@@ -1202,8 +1229,6 @@ int main(int argc, char* argv[])
 	auto finish = std::chrono::high_resolution_clock::now();
 	std::chrono::duration<double> elapsed = finish - start;
 	cout << "Elapsed time: " << floor(elapsed.count()/3600) << " h " << floor((elapsed.count() - 3600*floor(elapsed.count()/3600))/60) << " min " << elapsed.count() - 60*floor(elapsed.count()/60) << " s\n";
-	
-	cout << "\nW_line = " << W_line << "\tQ2_line = " << Q2_line << endl;
 	
 	return 0;
 }
