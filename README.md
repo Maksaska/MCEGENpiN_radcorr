@@ -111,4 +111,17 @@ Default settings:
 
 ## Some histograms
 
+<img src="/img/W.jpeg" alt="W"/>
+<img src="/img/Q2.jpeg" alt="Q2"/>
+<img src="/img/W_Q2.jpeg" alt="W_Q2"/>
+<img src="/img/phi_cos.jpeg" alt="phi_cos"/>
+<img src="/img/Erad.jpeg" alt="Erad"/>
+<img src="/img/cos_rad.jpeg" alt="cos_rad"/>
+<img src="/img/MM_N.jpeg" alt="MM_N"/>
+<img src="/img/MM_pi.jpeg" alt="MM_pi"/>
+<img src="/img/Q2_cos.jpeg" alt="Q2_cos"/>
+<img src="/img/Q2_phi.jpeg" alt="Q2_phi"/>
+<img src="/img/W_cos.jpeg" alt="W_cos"/>
+<img src="/img/W_phi.jpeg" alt="W_phi"/>
+
 <p align="left"> <img src="https://komarev.com/ghpvc/?username=maksaska&label=Profile%20views&color=0e75b6&style=flat" alt="maksaska" /> <img src="https://img.shields.io/badge/MSU-SINP-blue" /> <img src="https://img.shields.io/badge/JLab-red" /> </p>
