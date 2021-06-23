@@ -62,9 +62,11 @@ As a result, for each <a href="https://www.codecogs.com/eqnedit.php?latex=\{W,&s
 
 ## Usage
 
-1. Download the generator
-2. Compile with "Run" script or Makefile --> ./Run or make
-3. Start the compiled file with ./MCEGENpiN_radcorr command
+1. Install [Root Cern](https://root.cern.ch/building-root)
+2. git clone of the EG: git clone https://github.com/Maksaska/pi0p-pin-generator/
+3. Type command: chmod +x Run
+4. Compile with "Run" script or Makefile,i.e. ./Run or make
+5. Start the compiled file with ./MCEGENpiN_radcorr command
 
 Requirements: [Root Cern](https://root.cern/)
 
@@ -79,14 +81,18 @@ Options for program start:
 * --hist - <a href="https://www.codecogs.com/eqnedit.php?latex=(W,&space;Q^2)" target="_blank"><img src="https://latex.codecogs.com/gif.latex?(W,&space;Q^2)" title="(W, Q^2)" /></a>, <a href="https://www.codecogs.com/eqnedit.php?latex=W" target="_blank"><img src="https://latex.codecogs.com/gif.latex?W" title="W" /></a>, <a href="https://www.codecogs.com/eqnedit.php?latex=Q^2" target="_blank"><img src="https://latex.codecogs.com/gif.latex?Q^2" title="Q^2" /></a>, and <a href="https://www.codecogs.com/eqnedit.php?latex=(\cos{\theta},&space;\varphi)" target="_blank"><img src="https://latex.codecogs.com/gif.latex?(\cos{\theta},&space;\varphi)" title="(\cos{\theta}, \varphi)" /></a> histograms will be created (No input value required)
 * --RC - switch for radiative correction procedure (Enabled when entered. No input value required)
 * -n - switch for <a href="https://www.codecogs.com/eqnedit.php?latex=\pi^&plus;n" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\pi^&plus;n" title="\pi^+n" /></a> channel. (Charged pion channel is chosen when entered. No input value required)
-* -N - number of events
+* --trig - number of events
+* --docker - Sets all the parametes to default values
+* --seed - Used to initialize the event generator's RNG. Its value is a 32-bit RNG seed based on system clock with microsecond precision.
 * -h - beam polarization ("0" when beam is not polarized)
 
 Example: 
 
-./MCEGENpiN_radcorr --beam_energy=10 --target_R=0.5 --target_L=10 --W_min=1.1 --W_max=1.8 --Q2_min=0.5 --Q2_max=2 --RC -n -N 10000
+./MCEGENpiN_radcorr --beam_energy=10 --target_R=0.5 --target_L=10 --W_min=1.1 --W_max=1.8 --Q2_min=0.5 --Q2_max=2 --RC -n --trig=10000
 
 The program will be started with <a href="https://www.codecogs.com/eqnedit.php?latex=E_{beam}&space;=&space;10" target="_blank"><img src="https://latex.codecogs.com/gif.latex?E_{beam}&space;=&space;10" title="E_{beam} = 10" /></a> <a href="https://www.codecogs.com/eqnedit.php?latex=GeV" target="_blank"><img src="https://latex.codecogs.com/gif.latex?GeV" title="GeV" /></a> (h = 0 by default) for W:[1.1, 1.8] <a href="https://www.codecogs.com/eqnedit.php?latex=GeV" target="_blank"><img src="https://latex.codecogs.com/gif.latex?GeV" title="GeV" /></a> and <a href="https://www.codecogs.com/eqnedit.php?latex=Q^2" target="_blank"><img src="https://latex.codecogs.com/gif.latex?Q^2" title="Q^2" /></a>:[0.5, 2] <a href="https://www.codecogs.com/eqnedit.php?latex=GeV^2" target="_blank"><img src="https://latex.codecogs.com/gif.latex?GeV^2" title="GeV^2" /></a> with RC mode enabled for <a href="https://www.codecogs.com/eqnedit.php?latex=\pi^&plus;n" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\pi^&plus;n" title="\pi^+n" /></a> channel. Number of generated events is 10,000. Target radius is 0.5 cm and its length is 10 cm.
+
+Available kinematic range W:[1.08, 2] <a href="https://www.codecogs.com/eqnedit.php?latex=GeV" target="_blank"><img src="https://latex.codecogs.com/gif.latex?GeV" title="GeV" /></a> and <a href="https://www.codecogs.com/eqnedit.php?latex=Q^2" target="_blank"><img src="https://latex.codecogs.com/gif.latex?Q^2" title="Q^2" /></a>:[0.05, 5] <a href="https://www.codecogs.com/eqnedit.php?latex=GeV^2" target="_blank"><img src="https://latex.codecogs.com/gif.latex?GeV^2" title="GeV^2" /></a>
 
 Default settings:
 * --beam_energy = 6.5 <a href="https://www.codecogs.com/eqnedit.php?latex=GeV" target="_blank"><img src="https://latex.codecogs.com/gif.latex?GeV" title="GeV" /></a>
@@ -99,7 +105,8 @@ Default settings:
 * --hist Disabled
 * --RC Disabled
 * -n Disabled (<a href="https://www.codecogs.com/eqnedit.php?latex=\pi^0p" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\pi^0p" title="\pi^0p" /></a> channel by default)
-* -N = 1,000,000
+* --trig = 1,000,000 
+* --seed = time(NULL)
 * -h = 0
 
 ## Some histograms
