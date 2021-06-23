@@ -62,6 +62,46 @@ As a result, for each <a href="https://www.codecogs.com/eqnedit.php?latex=\{W,&s
 
 ## Usage
 
+1. Download the generator
+2. Compile with "Run" script or Makefile --> ./Run or make
+3. Start the compiled file with ./MCEGENpiN_radcorr command
+
+Requirements: [Root Cern](https://root.cern/)
+
+Options for program start:
+* --beam_energy - beam energy
+* --target_R - target cross-section radius (Keep in mind, the target is a cylinder)
+* --target_L - target length 
+* --W_min - left border for the W invariant
+* --W_max - right border for the W invariant
+* --Q2_min - left border for the Q^2 invariant
+* --Q2_max - right border for the Q^2 invariant
+* --hist - (W, Q^2), W, Q^2, and (cos(theta), phi) histograms will be created (No input value required)
+* --RC - switch for radiative correction proceedure (Enabled when entered. No input value required)
+* -n - switch for pi+n channel. (Charged pion channel is chosen when entered. No input value required)
+* -N - number of events
+* -h - beam polarization ("0" when beam is not polarized)
+
+Example: 
+
+./MCEGENpiN_radcorr --beam_energy=10 --target_R=0.5 --target_L=10 --W_min=1.1 --W_max=1.8 --Q2_min=0.5 --Q2_max=2 --RC -n -N 10000
+
+The program will be started with E_beam = 10 GeV (h = 0 by default) for W:[1.1, 1.8] GeV and Q2:[0.5, 2] GeV^2 with RC mode enabled for pi+n channel. Number of generated events is 10,000. Target radius is 0.5 cm and its length is 10 cm.
+
+Default settings:
+* --beam_energy = 6.5 GeV
+* --target_R = 1 cm
+* --target_L = 10 cm
+* --W_min = 1.08 GeV
+* --W_max = 2 GeV
+* --Q2_min = 0.05 GeV^2
+* --Q2_max = 5 GeV^2
+* --hist Disabled
+* --RC Disabled
+* -n Disabled (Pi0p channel by default)
+* -N = 1,000,000
+* -h = 0
+
 ## Some histograms
 
 <p align="left"> <img src="https://komarev.com/ghpvc/?username=maksaska&label=Profile%20views&color=0e75b6&style=flat" alt="maksaska" /> <img src="https://img.shields.io/badge/MSU-SINP-blue" /> <img src="https://img.shields.io/badge/JLab-red" /> </p>
