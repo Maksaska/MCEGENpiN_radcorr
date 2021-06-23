@@ -2,9 +2,9 @@
 This V7b version of the newest MC event generator for exclusive single pion electroproduction allows you to generate a massive statistics for the large invariants' scales. Relatively fast and effective procedures in conjunction with model representations make this program a convenient and reliable choice for data analysis in particle physics.
 
 ## What's it all about?
-One of the biggest parts of any experiments in physics is data analysis. Hadron physics with CLAS12 spectrometer gets pretty tricky when one should deal with its efficiency. This is where programs like this generator come quite handy. Not only do they allow you to restore the original cross-section, but they also can be used as an instrument for event selection development. 
+One of the biggest parts of any experiments in physics is data analysis. Hadron physics with [CLAS12 spectrometer](https://www.jlab.org/physics/hall-b/clas12) gets pretty tricky when one should deal with its efficiency. This is where programs like this generator come quite handy. Not only do they allow you to restore the original cross-section, but they also can be used as an instrument for event selection development. 
 
-The elaboration of this generator was carried out based on MAID representations. As a starting point, we use multipole amplitudes for the charged channels. This data is needed to evaluate the differential cross-section that we further use as weights for event generation.
+The elaboration of this generator was carried out based on [MAID](https://maid.kph.uni-mainz.de/maid2007/mult.html) representations. As a starting point, we use multipole amplitudes for the charged channels. This data is needed to evaluate the differential cross-section that we further use as weights for event generation.
 
 ### Formalism 
 Helicity amplitudes were considered the most convenient intermediate stage of the whole data handling. Using the multipole decomposition with Legendre polynomials one can obtain Helicity amplitudes as follows:
@@ -21,6 +21,22 @@ Helicity amplitudes were considered the most convenient intermediate stage of th
 <a href="https://www.codecogs.com/eqnedit.php?latex=H_{5}&space;=\dfrac{Q}{|k|}&space;\cos(\dfrac{\theta}{2})\sum_l&space;(l&plus;1)(S_{l&plus;}&space;&plus;&space;S_{(l&plus;1)-})[P_{l}'(\cos(\theta))&space;-&space;P_{l&plus;1}'(\cos(\theta))]" target="_blank"><img src="https://latex.codecogs.com/gif.latex?H_{5}&space;=\dfrac{Q}{|k|}&space;\cos(\dfrac{\theta}{2})\sum_l&space;(l&plus;1)(S_{l&plus;}&space;&plus;&space;S_{(l&plus;1)-})[P_{l}'(\cos(\theta))&space;-&space;P_{l&plus;1}'(\cos(\theta))]" title="H_{5} =\dfrac{Q}{|k|} \cos(\dfrac{\theta}{2})\sum_l (l+1)(S_{l+} + S_{(l+1)-})[P_{l}'(\cos(\theta)) - P_{l+1}'(\cos(\theta))]" /></a>
 
 <a href="https://www.codecogs.com/eqnedit.php?latex=H_{6}&space;=\dfrac{Q}{|k|}&space;\sin(\dfrac{\theta}{2})\sum_l&space;(l&plus;1)(S_{l&plus;}&space;-&space;S_{(l&plus;1)-})[P_{l}'(\cos(\theta))&space;&plus;&space;P_{l&plus;1}'(\cos(\theta))]" target="_blank"><img src="https://latex.codecogs.com/gif.latex?H_{6}&space;=\dfrac{Q}{|k|}&space;\sin(\dfrac{\theta}{2})\sum_l&space;(l&plus;1)(S_{l&plus;}&space;-&space;S_{(l&plus;1)-})[P_{l}'(\cos(\theta))&space;&plus;&space;P_{l&plus;1}'(\cos(\theta))]" title="H_{6} =\dfrac{Q}{|k|} \sin(\dfrac{\theta}{2})\sum_l (l+1)(S_{l+} - S_{(l+1)-})[P_{l}'(\cos(\theta)) + P_{l+1}'(\cos(\theta))]" /></a>
+
+These amplitudes are further used for the structure functions evaluation, which one requires for the differential cross-section calculation.
+
+<a href="https://www.codecogs.com/eqnedit.php?latex=\sigma_{T}&space;=&space;\dfrac{q}{2K}(|H_1|^2&space;&plus;&space;|H_2|^2&space;&plus;&space;|H_3|^2&space;&plus;&space;|H_4|^2)" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\sigma_{T}&space;=&space;\dfrac{q}{2K}(|H_1|^2&space;&plus;&space;|H_2|^2&space;&plus;&space;|H_3|^2&space;&plus;&space;|H_4|^2)" title="\sigma_{T} = \dfrac{q}{2K}(|H_1|^2 + |H_2|^2 + |H_3|^2 + |H_4|^2)" /></a>
+
+<a href="https://www.codecogs.com/eqnedit.php?latex=\sigma_{L}&space;=&space;\dfrac{q}{K}(|H_5|^2&space;&plus;&space;|H_6|^2)" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\sigma_{L}&space;=&space;\dfrac{q}{K}(|H_5|^2&space;&plus;&space;|H_6|^2)" title="\sigma_{L} = \dfrac{q}{K}(|H_5|^2 + |H_6|^2)" /></a>
+
+<a href="https://www.codecogs.com/eqnedit.php?latex=\sigma_{TT}&space;=&space;\dfrac{q}{K}Re(H_3H_2^*&space;-&space;H_4H_1^*)" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\sigma_{TT}&space;=&space;\dfrac{q}{K}Re(H_3H_2^*&space;-&space;H_4H_1^*)" title="\sigma_{TT} = \dfrac{q}{K}Re(H_3H_2^* - H_4H_1^*)" /></a>
+
+<a href="https://www.codecogs.com/eqnedit.php?latex=\sigma_{LT}&space;=&space;-\dfrac{q}{\sqrt{2}K}Re((H_1&space;-&space;H_4)H_5^*&space;&plus;&space;(H_2&space;&plus;&space;H_3)H_6^*)" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\sigma_{LT}&space;=&space;-\dfrac{q}{\sqrt{2}K}Re((H_1&space;-&space;H_4)H_5^*&space;&plus;&space;(H_2&space;&plus;&space;H_3)H_6^*)" title="\sigma_{LT} = -\dfrac{q}{\sqrt{2}K}Re((H_1 - H_4)H_5^* + (H_2 + H_3)H_6^*)" /></a>
+
+<a href="https://www.codecogs.com/eqnedit.php?latex=\sigma_{LT'}&space;=&space;-\dfrac{q}{\sqrt{2}K}Im((H_1&space;-&space;H_4)H_5^*&space;&plus;&space;(H_2&space;&plus;&space;H_3)H_6^*)" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\sigma_{LT'}&space;=&space;-\dfrac{q}{\sqrt{2}K}Im((H_1&space;-&space;H_4)H_5^*&space;&plus;&space;(H_2&space;&plus;&space;H_3)H_6^*)" title="\sigma_{LT'} = -\dfrac{q}{\sqrt{2}K}Im((H_1 - H_4)H_5^* + (H_2 + H_3)H_6^*)" /></a>
+
+where K and k and q are respectively, the photon equivalent energy and the virtual photon and pion 3-momenta in γN c.m.s. For unpolarized particles and for a longitudinally polarized electron beam, the φ-dependence of the γN → Nπ cross section can be specified in the following way:
+
+<a href="https://www.codecogs.com/eqnedit.php?latex=\dfrac{d\sigma}{d\Omega}&space;=&space;\sigma_{T}&space;&plus;&space;\epsilon&space;\sigma_{L}&space;&plus;&space;\epsilon&space;\sigma_{TT}\cos{2\varphi}&space;&plus;&space;\sqrt{2\epsilon&space;(1&space;&plus;&space;\epsilon)}\sigma_{LT}\cos{\varphi}&space;&plus;&space;h\sqrt{2\epsilon(1&space;-&space;\epsilon)}\sigma_{LT'}\sin{\varphi}" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\dfrac{d\sigma}{d\Omega}&space;=&space;\sigma_{T}&space;&plus;&space;\epsilon&space;\sigma_{L}&space;&plus;&space;\epsilon&space;\sigma_{TT}\cos{2\varphi}&space;&plus;&space;\sqrt{2\epsilon&space;(1&space;&plus;&space;\epsilon)}\sigma_{LT}\cos{\varphi}&space;&plus;&space;h\sqrt{2\epsilon(1&space;-&space;\epsilon)}\sigma_{LT'}\sin{\varphi}" title="\dfrac{d\sigma}{d\Omega} = \sigma_{T} + \epsilon \sigma_{L} + \epsilon \sigma_{TT}\cos{2\varphi} + \sqrt{2\epsilon (1 + \epsilon)}\sigma_{LT}\cos{\varphi} + h\sqrt{2\epsilon(1 - \epsilon)}\sigma_{LT'}\sin{\varphi}" /></a>
 
 ### Main idea
 
