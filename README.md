@@ -65,7 +65,7 @@ As a result, for each <a href="https://www.codecogs.com/eqnedit.php?latex=\{W,&s
 1. Install [Root Cern](https://root.cern.ch/building-root)
 2. git clone of the EG: git clone https://github.com/Maksaska/pi0p-pin-generator/
 3. Type command: chmod +x Run
-4. Compile with "Run" script or Makefile,i.e. ./Run or make
+4. Compile with "Run",i.e. ./Run
 5. Start the compiled file with ./MCEGENpiN_radcorr command
 
 Requirements: [Root Cern](https://root.cern/)
