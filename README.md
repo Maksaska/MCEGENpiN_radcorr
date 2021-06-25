@@ -1,5 +1,5 @@
-# MCEGENpiN_radcorr V7c
-This V7c version of the newest MC event generator for exclusive single pion electroproduction allows you to generate a massive statistics for the large invariants' scales. Relatively fast and effective procedures in conjunction with model representations make this program a convenient and reliable choice for data analysis in particle physics.
+# MCEGENpiN_radcorr V7d
+This V7d version of the newest MC event generator for exclusive single pion electroproduction allows you to generate a massive statistics for the large invariants' scales. Relatively fast and effective procedures in conjunction with model representations make this program a convenient and reliable choice for data analysis in particle physics.
 
 ## What's it all about?
 One of the biggest parts of any experiments in physics is data analysis. Hadron physics with [CLAS12 spectrometer](https://www.jlab.org/physics/hall-b/clas12) gets pretty tricky when one should deal with its efficiency. This is where programs like this generator come quite handy. Not only do they allow you to restore the original cross-section, but they also can be used as an instrument for event selection development. 
@@ -86,13 +86,19 @@ Options for program start:
 * --seed - Used to initialize the event generator's RNG. Its value is a 32-bit RNG seed based on system clock with microsecond precision.
 * -h - beam polarization ("0" when beam is not polarized)
 
-Example: 
+> Example: 
+>
+> ./MCEGENpiN_radcorr --beam_energy=10 --target_R=0.5 --target_L=10 --W_min=1.1 --W_max=1.8 --Q2_min=0.5 --Q2_max=2 --RC -n --trig=10000
+>
+> The program will be started with <a href="https://www.codecogs.com/eqnedit.php?latex=E_{beam}&space;=&space;10" target="_blank"><img src="https://latex.codecogs.com/gif.latex?E_{beam}&space;=&space;10" title="E_{beam} = 10" /></a> <a href="https://www.codecogs.com/eqnedit.php?latex=GeV" target="_blank"><img src="https://latex.codecogs.com/gif.latex?GeV" title="GeV" /></a> (h = 0 by default) for W:[1.1, 1.8] <a href="https://www.codecogs.com/eqnedit.php?latex=GeV" target="_blank"><img src="https://latex.codecogs.com/gif.latex?GeV" title="GeV" /></a> and <a href="https://www.codecogs.com/eqnedit.php?latex=Q^2" target="_blank"><img src="https://latex.codecogs.com/gif.latex?Q^2" title="Q^2" /></a>:[0.5, 2] <a href="https://www.codecogs.com/eqnedit.php?latex=GeV^2" target="_blank"><img src="https://latex.codecogs.com/gif.latex?GeV^2" title="GeV^2" /></a> with RC mode enabled for <a href="https://www.codecogs.com/eqnedit.php?latex=\pi^&plus;n" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\pi^&plus;n" title="\pi^+n" /></a> channel. Number of generated events is 10,000. Target radius is 0.5 cm and its length is 10 cm.
 
-./MCEGENpiN_radcorr --beam_energy=10 --target_R=0.5 --target_L=10 --W_min=1.1 --W_max=1.8 --Q2_min=0.5 --Q2_max=2 --RC -n --trig=10000
+Available kinematic range from MAID data W:[1.08, 2] <a href="https://www.codecogs.com/eqnedit.php?latex=GeV" target="_blank"><img src="https://latex.codecogs.com/gif.latex?GeV" title="GeV" /></a> and <a href="https://www.codecogs.com/eqnedit.php?latex=Q^2" target="_blank"><img src="https://latex.codecogs.com/gif.latex?Q^2" title="Q^2" /></a>:[0.05, 5] <a href="https://www.codecogs.com/eqnedit.php?latex=GeV^2" target="_blank"><img src="https://latex.codecogs.com/gif.latex?GeV^2" title="GeV^2" /></a>
 
-The program will be started with <a href="https://www.codecogs.com/eqnedit.php?latex=E_{beam}&space;=&space;10" target="_blank"><img src="https://latex.codecogs.com/gif.latex?E_{beam}&space;=&space;10" title="E_{beam} = 10" /></a> <a href="https://www.codecogs.com/eqnedit.php?latex=GeV" target="_blank"><img src="https://latex.codecogs.com/gif.latex?GeV" title="GeV" /></a> (h = 0 by default) for W:[1.1, 1.8] <a href="https://www.codecogs.com/eqnedit.php?latex=GeV" target="_blank"><img src="https://latex.codecogs.com/gif.latex?GeV" title="GeV" /></a> and <a href="https://www.codecogs.com/eqnedit.php?latex=Q^2" target="_blank"><img src="https://latex.codecogs.com/gif.latex?Q^2" title="Q^2" /></a>:[0.5, 2] <a href="https://www.codecogs.com/eqnedit.php?latex=GeV^2" target="_blank"><img src="https://latex.codecogs.com/gif.latex?GeV^2" title="GeV^2" /></a> with RC mode enabled for <a href="https://www.codecogs.com/eqnedit.php?latex=\pi^&plus;n" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\pi^&plus;n" title="\pi^+n" /></a> channel. Number of generated events is 10,000. Target radius is 0.5 cm and its length is 10 cm.
+Extrapolation for RADIATIVE CORRECTIONS:
+* <a href="https://www.codecogs.com/eqnedit.php?latex=Q^2" target="_blank"><img src="https://latex.codecogs.com/gif.latex?Q^2" title="Q^2" /></a> > 5.0 <a href="https://www.codecogs.com/eqnedit.php?latex=GeV^2" target="_blank"><img src="https://latex.codecogs.com/gif.latex?GeV^2" title="GeV^2" /></a> with <a href="https://www.codecogs.com/eqnedit.php?latex=\dfrac{d\sigma}{d\Omega_{e'}&space;dE_{e'}}(W,&space;Q^2&space;>&space;5.0)&space;=&space;C_1(W)&space;&plus;&space;\dfrac{C_2(W)}{Q^2}&space;&plus;&space;\dfrac{C_3(W)}{Q^4}" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\dfrac{d\sigma}{d\Omega_{e'}&space;dE_{e'}}(W,&space;Q^2&space;>&space;5.0)&space;=&space;C_1(W)&space;&plus;&space;\dfrac{C_2(W)}{Q^2}&space;&plus;&space;\dfrac{C_3(W)}{Q^4}" title="\dfrac{d\sigma}{d\Omega_{e'} dE_{e'}}(W, Q^2 > 5.0) = C_1(W) + \dfrac{C_2(W)}{Q^2} + \dfrac{C_3(W)}{Q^4}" /></a> expression
+* if W > 2.0 we assume W = 2.0
 
-Available kinematic range W:[1.08, 2] <a href="https://www.codecogs.com/eqnedit.php?latex=GeV" target="_blank"><img src="https://latex.codecogs.com/gif.latex?GeV" title="GeV" /></a> and <a href="https://www.codecogs.com/eqnedit.php?latex=Q^2" target="_blank"><img src="https://latex.codecogs.com/gif.latex?Q^2" title="Q^2" /></a>:[0.05, 5] <a href="https://www.codecogs.com/eqnedit.php?latex=GeV^2" target="_blank"><img src="https://latex.codecogs.com/gif.latex?GeV^2" title="GeV^2" /></a>
+**There isn't any extrapolation algorithm beyond the available kinematic range from MAID data for general generation procedure**
 
 Default settings:
 * --beam_energy = 6.5 <a href="https://www.codecogs.com/eqnedit.php?latex=GeV" target="_blank"><img src="https://latex.codecogs.com/gif.latex?GeV" title="GeV" /></a>
