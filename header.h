@@ -68,10 +68,11 @@ double Section(const double& W,  const double& Q2, const double& theta,  const d
 vector<complex<double>> Helicity_amplitudes(const double& W,  const double& Q2, const double& theta);/*   Helicity ampl. eval.   */
 double Section_int(const double& W, const double& Q2, const double& E_beam); /*   Integral cross section dS/dOmegadE from dataset   */
 double Section_interp_int(const double& W, const double& Q2, const double& E_beam); /*   Integral cross section dS/dOmegadE for random W, Q2   */
-double Spence(const double& x);
+double Spence(const double& x); /*   Spence function   */
 double delta_r(const double& W, const double& Q2);
 double ts(const double& W, const double& Q2, const double& iter);
 double tp(const double& W, const double& Q2, const double& iter);
+double Section_interp_int_Q2_extra(const double& W, const double& Q2); /*  Q2 extrapolation with W in [1.08, 2.0]  */
 double R1(const double& W, const double& Q2); /*   soft region for RC   */
 double R2(const double& W, const double& Q2); /*   Hard radiation with init. elec.   */
 double R3(const double& W, const double& Q2); /*   Hard radiation with final elec.   */

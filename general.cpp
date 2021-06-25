@@ -166,7 +166,7 @@ void input_check(int argc, char* argv[])
 	};
 	
 	cout << " ------------------------------------------------------------------- " << endl;
-	cout << "| Monte Carlo event generator for exclusive pion electroproduction  | \n| with radiative corrections              \"MCEGENpiN_radcorr V7c\"   |       \n|                                                                   |\n|     Authors: Davydov M. - MSU, Physics dep.                       |\n|              Isupov E.  - MSU, SINP                               |\n|                                                                   |\n| https://github.com/Maksaska/pi0p-pin-generator                    |\n ------------------------------------------------------------------- " << endl;
+	cout << "| Monte Carlo event generator for exclusive pion electroproduction  | \n| with radiative corrections              \"MCEGENpiN_radcorr V7d\"   |       \n|                                                                   |\n|     Authors: Davydov M. - MSU, Physics dep.                       |\n|              Isupov E.  - MSU, SINP                               |\n|                                                                   |\n| https://github.com/Maksaska/pi0p-pin-generator                    |\n ------------------------------------------------------------------- " << endl;
 	
 	cout << endl;	
 	
@@ -435,7 +435,6 @@ double Section_int(const double& W, const double& Q2, const double& E_ini)
 	{
 		if(W == i[0] and Q2 == i[1])
 		{
-			if(std::isnan(Gamma_flux*(i[2] + eps*i[3]))){cout << Gamma_flux*(i[2] + eps*i[3]) << "\n" << endl;}
 			return Gamma_flux*(i[2] + eps*i[3]);			
 		}
 	}	
@@ -491,6 +490,21 @@ double Section_interp_int(const double& W, const double& Q2, const double& E_ini
 	return S;
 }
 
+double Section_interp_int_Q2_extra(const double& W, const double& Q2)
+{
+	double C1, C2, C3, y1, y2, y3, Q2_1(4.9), Q2_2(4.95), Q2_3(5.0);
+	
+	y1 = Section_interp_int(W, Q2_1, E0);
+	y2 = Section_interp_int(W, Q2_2, E0);
+	y3 = Section_interp_int(W, Q2_3, E0);
+	
+	C3 = ((y3 - y1)*(1/Q2_2 - 1/Q2_1)/(1/Q2_3 - 1/Q2_1) - (y2 - y1))/((1/(Q2_3*Q2_3) - 1/(Q2_1*Q2_1))*(1/Q2_2 - 1/Q2_1)/(1/Q2_3 - 1/Q2_1) - (1/(Q2_2*Q2_2) - 1/(Q2_1*Q2_1)));
+	C2 = ((y2 - y1) - C3*(1/(Q2_2*Q2_2) - 1/(Q2_1*Q2_1)))/(1/Q2_2 - 1/Q2_1);
+	C1 = y1 - C2/Q2_1 - C3/(Q2_1*Q2_1);
+	
+	return C1 + C2/Q2 + C3/(Q2*Q2);
+}
+
 double Spence(const double& x)
 {
 	double result(0), S1(1), S2;
@@ -511,10 +525,7 @@ double delta_r(const double& W, const double& Q2)
 	double nu =  (W*W + Q2 - m_p*m_p)/(2*m_p);
 	double E_out = E0 - nu;
 	
-	p.SetPxPyPzE( (E0 - nu)*sqrt(1 - pow(1 - Q2/(2*E0*(E0 - nu)),2)), 0, (E0 - nu)*(1 - Q2/(2*E0*(E0 - nu))), E0 - nu);
-	s.SetPxPyPzE(0, 0, E0, E0);
-	
-	return -(28/9 - 13*log(2*(s*p)/(m_e*m_e))/6 + (log(E0/delta) + log(E_out/delta))*(log(2*(s*p)/(m_e*m_e)) - 1) - Spence(-nu/E_out) - Spence(nu/E0))/(M_PI*137);
+	return -(28/9 - 13*log(Q2/(m_e*m_e))/6 + (log(E0/delta) + log(E_out/delta))*(log(Q2/(m_e*m_e)) - 1) - Spence(-nu/E_out) - Spence(nu/E0))/(M_PI*137);
 }
 
 double ts(const double& W, const double& Q2, const double& iter)
@@ -548,8 +559,12 @@ double R2(const double& W, const double& Q2)
 	if(std::isnan(W_))
 	{
 		S1 = 0;
-	} else
+	} else if(W_ < 1.08)
 	{
+		S1 = 0;
+	} else 
+	{	
+		if(W_ > 2.0){W_ = 2.0;}
 		S1 = Section_interp_int(W_, Q2*Es_min/E0, Es_min)*ts(W, Q2, Es_min)/(E0 - Es_min);	
 	}
 
@@ -563,15 +578,16 @@ double R2(const double& W, const double& Q2)
 			S1 = S2; continue;
 		}
 		
-		if(W_ < 2.0 and Q2*iter/E0 < 5.0 and W_ > 1.08)
+		if(W_ >= 1.08)
 		{
+			if(W_ > 2.0){W_ = 2.0;}
 			S2 = Section_interp_int(W_, Q2*iter/E0, iter)*ts(W, Q2, iter)/(E0 - iter); 
 		} else
 		{
 			S2 = 0;
 		}
 	
-		result += (S1 + S2)*(E0 - delta - Es_min)/200;
+		result += (S1 + S2)*(E0 - delta - Es_min)/20;
 		S1 = S2;
 	}
 	
@@ -591,9 +607,14 @@ double R3(const double& W, const double& Q2)
 	if(std::isnan(W_))
 	{
 		S1 = 0;
-	} else
+	} else if(W_ < 1.08)
 	{
-		S1 = Section_interp_int(W_, Q2*(E0 - nu + delta)/(E0 - nu), E0)*tp(W, Q2, E0 - nu + delta)/delta;	
+		S1 = 0;
+	}else
+	{
+		if(W_ > 2.0){W_ = 2.0;}
+if(Q2*(E0 - nu + delta)/(E0 - nu) > 5.0){S1 = Section_interp_int_Q2_extra(W_, Q2*(E0 - nu + delta)/(E0 - nu))*tp(W, Q2, E0 - nu + delta)/delta;}
+		else{S1 = Section_interp_int(W_, Q2*(E0 - nu + delta)/(E0 - nu), E0)*tp(W, Q2, E0 - nu + delta)/delta;}			
 	}	
 
 	for(double iter = E0 - nu + delta + (Ep_max - E0 + nu - delta)/10; iter <= Ep_max; iter += (Ep_max - E0 + nu - delta)/10)
@@ -607,15 +628,17 @@ double R3(const double& W, const double& Q2)
 			S1 = S2; continue;
 		}
 		
-		if(W_ < 2.0 and Q2*iter/(E0 - nu) < 5.0 and W_ > 1.08)
+		if(W_ > 1.08)
 		{
-			S2 = Section_interp_int(W_, Q2*iter/(E0 - nu), E0)*tp(W, Q2, iter)/(iter - E0 + nu); 
+			if(W_ > 2.0){W_ = 2.0;}
+			if(Q2*iter/(E0 - nu) > 5.0){S2 = Section_interp_int_Q2_extra(W_, Q2*iter/(E0 - nu))*tp(W, Q2, iter)/(iter - E0 + nu);}
+			else{S2 = Section_interp_int(W_, Q2*iter/(E0 - nu), E0)*tp(W, Q2, iter)/(iter - E0 + nu);}		
 		} else
 		{
 			S2 = 0;
 		}
 		
-		result += (S1 + S2)*(Ep_max - E0 + nu - delta)/200;
+		result += (S1 + S2)*(Ep_max - E0 + nu - delta)/20;
 		S1 = S2;
 	}
 	
@@ -764,7 +787,7 @@ void generate_particle()
 			Q2_ = Q2*(E0 - nu + Erad)/(E0 - nu);
 			W_ = sqrt(m_p*m_p - Q2_ + 2*(- nu + Erad)*m_p);
 			count++;
-			if(count > 5)
+			if(count > 10)
 			{
 				Q2_ = Q2; W_ = W;
 				r1 = 1; r2 = 0; r3 = 0;
