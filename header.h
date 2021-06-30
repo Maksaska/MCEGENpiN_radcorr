@@ -50,7 +50,7 @@ void input_check(int argc, char* argv[]); /*   This function checks if there any
 void Reading(string Path,vector<vector<double>>&V); /*   Reads the data from csv   */
 double P(const int& der,const int& n, const double& theta); /*   Legendre polynomials   */	
 vector<complex<double>> Finder(const double& W,  const double& Q2); /*   it searches for multipoles EMS   */					
-void generate_particle();/*   
+void generate_particle(const int& k); /*   
 				* This function generates the event
 				* It creates kin. parameters from given E0 [W_min, W_max] && [Q2_min, Q2_max]
 				* Gets the cross-section
@@ -78,7 +78,3 @@ double R2(const double& W, const double& Q2); /*   Hard radiation with init. ele
 double R3(const double& W, const double& Q2); /*   Hard radiation with final elec.   */
 double Gen_omega_init(const double& W, const double& Q2); /*   Rad. photon energy generation from init. elec.   */
 double Gen_omega_fin(const double& W, const double& Q2); /*   Rad. photon energy generation from fin. elec.   */
-
-
-
-

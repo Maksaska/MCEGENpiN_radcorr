@@ -15,6 +15,10 @@ vector<vector<double>> data, data_interp;
 double m_p(0.93827), m_n(0.93957), m_pip(0.13957), m_pi0(0.13498), m_e(0.000511), delta(0.01); 
 vector<double> values_rad{9999, 1, 9999, 1};
 
+void add_hadrons(const double& W_, const double& Q2_, const double& theta, const double& phi, Event& bob); /*   Adds hadron system in cm into Event object   */
+void add_electron(const double& W, const double& Q2, Event& bob); /*   Adds outgoing electron in cm into Event object   */
+void add_rad_photon(const double& Erad, const double& ang1, const double& ang2, Event& bob); /*   Adds outgoing rad photon in cm into Event object   */
+
 void Reading(string Path, vector<vector<double>>& V)
 {
 	string line; stringstream ss;
@@ -166,7 +170,7 @@ void input_check(int argc, char* argv[])
 	};
 	
 	cout << " ------------------------------------------------------------------- " << endl;
-	cout << "| Monte Carlo event generator for exclusive pion electroproduction  | \n| with radiative corrections              \"MCEGENpiN_radcorr V7d\"   |       \n|                                                                   |\n|     Authors: Davydov M. - MSU, Physics dep.                       |\n|              Isupov E.  - MSU, SINP                               |\n|                                                                   |\n| https://github.com/Maksaska/pi0p-pin-generator                    |\n ------------------------------------------------------------------- " << endl;
+	cout << "| Monte Carlo event generator for exclusive pion electroproduction  | \n| with radiative corrections              \"MCEGENpiN_radcorr V7e\"   |       \n|                                                                   |\n|     Authors: Davydov M. - MSU, Physics dep.                       |\n|              Isupov E.  - MSU, SINP                               |\n|                                                                   |\n| https://github.com/Maksaska/pi0p-pin-generator                    |\n ------------------------------------------------------------------- " << endl;
 	
 	cout << endl;	
 	
@@ -613,8 +617,8 @@ double R3(const double& W, const double& Q2)
 	}else
 	{
 		if(W_ > 2.0){W_ = 2.0;}
-if(Q2*(E0 - nu + delta)/(E0 - nu) > 5.0){S1 = Section_interp_int_Q2_extra(W_, Q2*(E0 - nu + delta)/(E0 - nu))*tp(W, Q2, E0 - nu + delta)/delta;}
-		else{S1 = Section_interp_int(W_, Q2*(E0 - nu + delta)/(E0 - nu), E0)*tp(W, Q2, E0 - nu + delta)/delta;}			
+if(Q2*(E0 - nu + delta)/(E0 - nu) > 5.0){S2 = Section_interp_int_Q2_extra(W_, Q2*(E0 - nu + delta)/(E0 - nu))*tp(W, Q2, E0 - nu + delta)/delta;}
+		else{S1 = Section_interp_int(W_, Q2*(E0 - nu + delta)/(E0 - nu), E0)*tp(W, Q2, E0 - nu - delta)/delta;}			
 	}	
 
 	for(double iter = E0 - nu + delta + (Ep_max - E0 + nu - delta)/10; iter <= Ep_max; iter += (Ep_max - E0 + nu - delta)/10)
@@ -720,80 +724,9 @@ double Gen_omega_fin(const double& W, const double& Q2)
 	return omega;
 }
 
-void generate_particle()
-{ 
-	double W, Q2, theta, phi, S, factor(1), Uni, nu;
-	double Epi, Ep, p;
-	double r1(1), r2(0), r3(0);
-	double Erad(0.0), Q2_, W_;
-	double ang1, ang2;
-	S = nan("");
-	
-	while(std::isnan(S))
-	{
-		W = fRand(W_min, W_max); 
-		Q2 = fRand(Q2_min, Q2_max); 
-		theta = fRand(0, M_PI);
-		phi = fRand(0, 2*M_PI);
-		
-		S = Linear(W, Q2, theta, phi);	
-	}
-	
-	W_ = W;
-	Q2_ = Q2;
-	
-	if(rad_corr)
-	{
-		r1 = R1(W, Q2); 
-		r2 = R2(W, Q2); 
-		r3 = R3(W, Q2); 
-		
-		factor = (r1 + r2 + r3)/Section_interp_int(W, Q2, E0); 
-	}
-	
-	S *= factor;
-
-	if(histogram and (not std::isnan(S)))
-	{
-		h1 -> Fill(W, Q2, S);
-		h3 -> Fill(W, S);
-		h4 -> Fill(Q2, S); double fff = cos(theta);
-		h5 -> Fill(phi,fff, S);	
-	}	
-	
-	Event bob; Particle proxy;
-
-	bob.set_beam(E0, h);
-	bob.set_coordinates(R, L);
-	bob.set_section(S);
-	
-	Uni = fRand(0.0, 1.0);
-	nu = (W*W + Q2 - m_p*m_p)/(2*m_p);
-	
-	if(r1/(r1 + r2 + r3) < Uni and Uni <= (r1 + r2)/(r1 + r2 + r3) and rad_corr)
-	{
-		Erad = Gen_omega_init(W, Q2);
-		Q2_ = Q2*(E0 - Erad)/E0;
-		W_ = sqrt(m_p*m_p - Q2_ + 2*(- Erad + nu)*m_p);
-	}
-	
-	if((r1 + r2)/(r1 + r2 + r3) < Uni and rad_corr) 
-	{
-		int count(0);
-		W_ = nan("");
-		while(std::isnan(W_)) 
-		{
-			Erad = Gen_omega_fin(W, Q2);
-			Q2_ = Q2*(E0 - nu + Erad)/(E0 - nu);
-			W_ = sqrt(m_p*m_p - Q2_ + 2*(- nu + Erad)*m_p);
-			count++;
-			if(count > 10)
-			{
-				Q2_ = Q2; W_ = W;
-				r1 = 1; r2 = 0; r3 = 0;
-			}			
-		}
-	}
+void add_hadrons(const double& W_, const double& Q2_, const double& theta, const double& phi, Event& bob)
+{
+	double Epi, Ep, p, ang1, ang2; Particle proxy;
 	
 	if(channel)
 	{
@@ -832,16 +765,6 @@ void generate_particle()
 		Ep = (W_*W_ + m_n*m_n - m_pip*m_pip)/(2*W_);
 		p = sqrt(Epi*Epi - m_pip*m_pip);
 		
-		if(std::isnan(p))
-		{
-			Q2_ = Q2; W_ = W;
-			r1 = 1; r2 = 0; r3 = 0;	
-		}
-		
-		Epi = (W_*W_ + m_pip*m_pip - m_n*m_n)/(2*W_);
-		Ep = (W_*W_ + m_n*m_n - m_pip*m_pip)/(2*W_);
-		p = sqrt(Epi*Epi - m_pip*m_pip);
-		
 		proxy.mass = m_n; 
 		proxy.id = 2112;
 		(proxy.p).SetPxPyPzE(-p*cos(phi)*sin(theta), -p*sin(phi)*sin(theta), -p*cos(theta), Ep);
@@ -851,38 +774,201 @@ void generate_particle()
 		proxy.id = 211;
 		(proxy.p).SetPxPyPzE(p*cos(phi)*sin(theta), p*sin(phi)*sin(theta), p*cos(theta), Epi);
 		bob.add_particle(proxy);	
-	}	
-		
+	}
+}
+
+void add_electron(const double& W, const double& Q2, Event& bob)
+{
+	Particle proxy;
 	proxy.mass = m_e; 
 	proxy.id = 11;
 	(proxy.p).SetPxPyPzE(sqrt(E2(W)*E2(W) - m_e*m_e)*sin_2(W, Q2), 0, sqrt(E2(W)*E2(W) - m_e*m_e)*cos_2(W, Q2), E2(W));
 	bob.add_particle(proxy);
-	
-	bob.cm_to_lab(W, Q2);	
-	
-	if(r1/(r1 + r2 + r3) < Uni and Uni <= (r1 + r2)/(r1 + r2 + r3) and rad_corr)
-	{
-		ang1 = fRand(0, M_PI*sqrt(m_e/E0)/2);
-		ang2 = fRand(0, 2*M_PI);
-		proxy.mass = 0; 
-		proxy.id = 22;
-		(proxy.p).SetPxPyPzE(Erad*cos(ang2)*sin(ang1), Erad*sin(ang2)*sin(ang1), Erad*cos(ang1) ,Erad);
-		bob.add_particle(proxy);
-	}
-	
-	if((r1 + r2)/(r1 + r2 + r3) < Uni and rad_corr) 
-	{
-		ang1 = acos(1 - Q2/(2*E0*(E0 - nu))) + fRand(-M_PI*sqrt(m_e/(E0 - nu))/2, M_PI*sqrt(m_e/(E0 - nu))/2);
-		ang2 = fRand(0, 2*M_PI);
-		proxy.mass = 0; 
-		proxy.id = 22;
-		(proxy.p).SetPxPyPzE(Erad*cos(ang2)*sin(ang1), Erad*sin(ang2)*sin(ang1), Erad*cos(ang1) ,Erad);
-		bob.add_particle(proxy);	
-	}
-	
-	bob.print_lund(path);
 }
 
+void add_rad_photon(const double& Erad, const double& ang1, const double& ang2, Event& bob)
+{
+	Particle proxy;
+	proxy.mass = 0; 
+	proxy.id = 22;
+	(proxy.p).SetPxPyPzE(Erad*cos(ang2)*sin(ang1), Erad*sin(ang2)*sin(ang1), Erad*cos(ang1), Erad);
+	bob.add_particle(proxy);
+}
+
+void generate_particle(const int& k)
+{ 
+	double W, Q2, theta, phi, S, factor(1), nu, S_1;
+	double Epi, Ep, p;
+	double r1, r2, r3;
+	double Erad(0.0), Q2_, W_;
+	double ang1, ang2;
+	double fff; int count(1); int ghost(0);
+	
+	if(N - k < 3)
+	{
+		count = N % 3;
+	}
+	
+	Event bob; 
+	
+	S = nan("");
+	
+	while(std::isnan(S))
+	{
+		W = fRand(W_min, W_max); 
+		Q2 = fRand(Q2_min, Q2_max); 
+		theta = fRand(0, M_PI);
+		phi = fRand(0, 2*M_PI);		
+		S = Linear(W, Q2, theta, phi);	
+	}
+	
+	W_ = W;
+	Q2_ = Q2;
+	nu = (W*W + Q2 - m_p*m_p)/(2*m_p);
+	
+	if(rad_corr)
+	{
+		r1 = R1(W, Q2); 
+		r2 = R2(W, Q2); 
+		r3 = R3(W, Q2); 
+		
+		factor = (r1 + r2 + r3)/Section_interp_int(W, Q2, E0); 
+		S *= factor;
+		
+		bob.set_beam(E0, h);
+		
+		bob.set_cm_system(); // r1
+		bob.set_coordinates(R, L); S_1 = S*r1/(r1 + r2 + r3);
+		bob.set_section(S_1);
+		add_hadrons(W_, Q2_, theta, phi, bob);
+		add_electron(W, Q2, bob);
+		bob.cm_to_lab(W, Q2);
+		bob.print_lund(path);
+		
+		if(histogram)
+		{
+			h1 -> Fill(W_, Q2_, S_1);
+			h3 -> Fill(W_, S_1);
+			h4 -> Fill(Q2_, S_1); fff = cos(theta);
+			h5 -> Fill(phi, fff, S_1);	
+		}
+		bob.clear_event();
+		
+		if(N - k < 3)
+		{
+			count--;
+		}
+		
+		if(count > 0)
+		{
+			bob.set_cm_system(); // r2
+			bob.set_coordinates(R, L); S_1 = S*r2/(r1 + r2 + r3);
+			bob.set_section(S_1);			
+			W_ = 0;
+			
+			while((W_ < m_n + m_pip or std::isnan(W_)) and ghost < 10) 
+			{
+				Erad = Gen_omega_init(W, Q2); 
+				Q2_ = Q2*(E0 - Erad)/E0;
+				W_ = sqrt(m_p*m_p - Q2_ + 2*(- Erad + nu)*m_p); ghost++;		
+			}
+			
+			if(ghost == 10)
+			{
+				W_ = W;
+				Q2_ = Q2; S_1 = S; bob.set_section(S_1);
+			}
+					
+			add_hadrons(W_, Q2_, theta, phi, bob);
+			add_electron(W, Q2, bob);
+			bob.cm_to_lab(W, Q2);
+			
+			if(ghost < 10)
+			{
+				ang1 = fRand(0, M_PI*sqrt(m_e/E0)/2);
+				ang2 = fRand(0, 2*M_PI);
+				add_rad_photon(Erad, ang1, ang2, bob);
+			}
+			
+			bob.print_lund(path);
+			
+			if(histogram)
+			{
+				h1 -> Fill(W_, Q2_, S_1);
+				h3 -> Fill(W_, S_1);
+				h4 -> Fill(Q2_, S_1); fff = cos(theta);
+				h5 -> Fill(phi, fff, S_1);	
+			}
+			bob.clear_event(); ghost = 0;
+			
+			if(N - k < 3)
+			{
+				count--;
+			}
+		}		
+		
+		if(count > 0)
+		{
+			bob.set_cm_system(); // r3
+			bob.set_coordinates(R, L); S_1 = S*r3/(r1 + r2 + r3);
+			bob.set_section(S_1);
+			
+			W_ = 0; 
+			
+			while((W_ < m_n + m_pip or std::isnan(W_)) and ghost < 10) 
+			{
+				Erad = Gen_omega_fin(W, Q2);
+				Q2_ = Q2*(E0 - nu - Erad)/(E0 - nu);
+				W_ = sqrt(m_p*m_p - Q2_ + 2*(nu + Erad)*m_p); ghost++;		
+			}
+			
+			if(ghost == 10)
+			{
+				W_ = W;
+				Q2_ = Q2; S_1 = S; bob.set_section(S_1);
+			}
+					
+			add_hadrons(W_, Q2_, theta, phi, bob);
+			add_electron(W, Q2, bob);
+			bob.cm_to_lab(W, Q2);
+			
+			if(ghost < 10)
+			{
+				ang1 = acos(1 - Q2/(2*E0*(E0 - nu))) + fRand(-M_PI*sqrt(m_e/(E0 - nu))/2, M_PI*sqrt(m_e/(E0 - nu))/2);
+				ang2 = fRand(0, 2*M_PI);
+				add_rad_photon(Erad, ang1, ang2, bob);			
+			}
+
+			bob.print_lund(path);
+			
+			if(histogram)
+			{
+				h1 -> Fill(W_, Q2_, S_1);
+				h3 -> Fill(W_, S_1);
+				h4 -> Fill(Q2_, S_1); fff = cos(theta);
+				h5 -> Fill(phi, fff, S_1);	
+			}
+		}				
+	} else
+	{
+		bob.set_beam(E0, h);		
+		bob.set_cm_system(); // Born
+		bob.set_coordinates(R, L); 
+		bob.set_section(S);
+		add_hadrons(W, Q2, theta, phi, bob);
+		add_electron(W, Q2, bob);
+		bob.cm_to_lab(W, Q2);
+		bob.print_lund(path);
+		
+		if(histogram)
+		{
+			h1 -> Fill(W, Q2, S);
+			h3 -> Fill(W, S);
+			h4 -> Fill(Q2, S); fff = cos(theta);
+			h5 -> Fill(phi, fff, S);	
+		}
+	}
+}
 
 
 

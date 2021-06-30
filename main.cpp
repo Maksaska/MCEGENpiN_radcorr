@@ -11,16 +11,16 @@ TH2* h5 = new TH2F("h5", "Histogram (#phi,cos(#theta^{*}))", 180, 0, 2*M_PI, 100
 int main(int argc, char* argv[])
 {	
 	auto start = std::chrono::high_resolution_clock::now();
-	int counter_(500); 
+	int counter_(500), inter(1); 
 
 	input_check(argc, argv); 
 	if(seed_ == 0){seed_ = time(NULL);}
 	srand(seed_);
-	if(rad_corr){counter_ = 10;}
+	if(rad_corr){counter_ = 10; inter = 3;}
 	
-	for(int k = 0; k < N; k++)
+	for(int k = 0; k < N; k += inter)
 	{
-		generate_particle();
+		generate_particle(k);
 		if(k % counter_ == 0)
 		{
 			auto finish_ = std::chrono::high_resolution_clock::now();
