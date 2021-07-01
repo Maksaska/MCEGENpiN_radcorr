@@ -143,6 +143,7 @@ void input_check(int argc, char* argv[])
 			};
 			case 'x': {
 				W_max = atof(optarg);
+				if(W_max <= W_min){W_max = W_min + 0.01;}
 				if(W_max > 2.0){W_max = 2.0;}
 				break;
 			};
@@ -153,7 +154,7 @@ void input_check(int argc, char* argv[])
 			};
 			case 'v': {
 				Q2_max = atof(optarg);
-				if(Q2_max > 5.0){Q2_max = 5.0;}
+				if(Q2_max <= Q2_min){Q2_max = Q2_min + 0.05;}
 				break;
 			};
 			case 'a': {
@@ -494,19 +495,43 @@ double Section_interp_int(const double& W, const double& Q2, const double& E_ini
 	return S;
 }
 
+double Section_interp_Q2_extra(const double& W,  const double& Q2, const double& theta,  const double& phi)
+{
+	double C1, C2, y1, y2, Q2_1(4.0), Q2_2(5.0);
+	
+	y1 = Linear(W, Q2_1, theta, phi);
+	y2 = Linear(W, Q2_2, theta, phi);
+	
+	C1 = log(y2/y1)/log(Q2_1/Q2_2);
+	C2 = y1*pow(Q2_1, C1);
+	
+	return C2/pow(Q2, C1);
+}
+
 double Section_interp_int_Q2_extra(const double& W, const double& Q2)
 {
-	double C1, C2, C3, y1, y2, y3, Q2_1(4.9), Q2_2(4.95), Q2_3(5.0);
+	double C1, C2, y1, y2, Q2_1(4.0), Q2_2(5.0);
 	
 	y1 = Section_interp_int(W, Q2_1, E0);
 	y2 = Section_interp_int(W, Q2_2, E0);
-	y3 = Section_interp_int(W, Q2_3, E0);
 	
-	C3 = ((y3 - y1)*(1/Q2_2 - 1/Q2_1)/(1/Q2_3 - 1/Q2_1) - (y2 - y1))/((1/(Q2_3*Q2_3) - 1/(Q2_1*Q2_1))*(1/Q2_2 - 1/Q2_1)/(1/Q2_3 - 1/Q2_1) - (1/(Q2_2*Q2_2) - 1/(Q2_1*Q2_1)));
-	C2 = ((y2 - y1) - C3*(1/(Q2_2*Q2_2) - 1/(Q2_1*Q2_1)))/(1/Q2_2 - 1/Q2_1);
-	C1 = y1 - C2/Q2_1 - C3/(Q2_1*Q2_1);
+	C1 = log(y2/y1)/log(Q2_1/Q2_2);
+	C2 = y1*pow(Q2_1, C1);
 	
-	return C1 + C2/Q2 + C3/(Q2*Q2);
+	return C2/pow(Q2, C1);
+}
+
+double Section_interp_int_Q2_extra_R2(const double& W, const double& Q2, const double& E0)
+{
+	double C1, C2, y1, y2, Q2_1(4.0), Q2_2(5.0);
+	
+	y1 = Section_interp_int(W, Q2_1, E0);
+	y2 = Section_interp_int(W, Q2_2, E0);
+	
+	C1 = log(y2/y1)/log(Q2_1/Q2_2);
+	C2 = y1*pow(Q2_1, C1);
+	
+	return C2/pow(Q2, C1);
 }
 
 double Spence(const double& x)
@@ -547,7 +572,7 @@ double tp(const double& W, const double& Q2, const double& iter)
 
 double R1(const double& W, const double& Q2)
 {
-	return Section_interp_int(W, Q2, E0)*exp(delta_r(W, Q2));
+	return (Q2 > 5.0) ? Section_interp_int_Q2_extra(W, Q2)*exp(delta_r(W, Q2)) : Section_interp_int(W, Q2, E0)*exp(delta_r(W, Q2));
 }
 
 double R2(const double& W, const double& Q2) 
@@ -569,7 +594,8 @@ double R2(const double& W, const double& Q2)
 	} else 
 	{	
 		if(W_ > 2.0){W_ = 2.0;}
-		S1 = Section_interp_int(W_, Q2*Es_min/E0, Es_min)*ts(W, Q2, Es_min)/(E0 - Es_min);	
+		if(Q2*Es_min/E0 > 5.0){S1 = Section_interp_int_Q2_extra_R2(W_, Q2*Es_min/E0, Es_min)*ts(W, Q2, Es_min)/(E0 - Es_min);}
+		else{S1 = Section_interp_int(W_, Q2*Es_min/E0, Es_min)*ts(W, Q2, Es_min)/(E0 - Es_min);}			
 	}
 
 	for(double iter = Es_min + (E0 - delta - Es_min)/10; iter <= E0 - delta; iter += (E0 - delta - Es_min)/10)
@@ -585,7 +611,8 @@ double R2(const double& W, const double& Q2)
 		if(W_ >= 1.08)
 		{
 			if(W_ > 2.0){W_ = 2.0;}
-			S2 = Section_interp_int(W_, Q2*iter/E0, iter)*ts(W, Q2, iter)/(E0 - iter); 
+			if(Q2*iter/E0 > 5.0){S2 = Section_interp_int_Q2_extra_R2(W_, Q2*iter/E0, iter)*ts(W, Q2, iter)/(E0 - iter);}
+			else{S2 = Section_interp_int(W_, Q2*iter/E0, iter)*ts(W, Q2, iter)/(E0 - iter);}			
 		} else
 		{
 			S2 = 0;
@@ -818,8 +845,9 @@ void generate_particle(const int& k)
 		W = fRand(W_min, W_max); 
 		Q2 = fRand(Q2_min, Q2_max); 
 		theta = fRand(0, M_PI);
-		phi = fRand(0, 2*M_PI);		
-		S = Linear(W, Q2, theta, phi);	
+		phi = fRand(0, 2*M_PI);
+		if(Q2 > 5.0){S = Section_interp_Q2_extra(W, Q2, theta, phi);}	
+		else{S = Linear(W, Q2, theta, phi);}		
 	}
 	
 	W_ = W;
@@ -832,7 +860,8 @@ void generate_particle(const int& k)
 		r2 = R2(W, Q2); 
 		r3 = R3(W, Q2); 
 		
-		factor = (r1 + r2 + r3)/Section_interp_int(W, Q2, E0); 
+		if(Q2 > 5.0){factor = (r1 + r2 + r3)/Section_interp_int_Q2_extra(W, Q2);}
+		else{factor = (r1 + r2 + r3)/Section_interp_int(W, Q2, E0);}		
 		S *= factor;
 		
 		bob.set_beam(E0, h);

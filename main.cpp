@@ -3,9 +3,9 @@
 using namespace std;
 
 auto c1 = new TCanvas("c1", "Histogram", 1280, 1080);   
-TH2* h1 = new TH2F("h1", "Histogram (W,Q^{2})_2d", 186, 1.08, 2, 440, 0, 5);
+TH2* h1 = new TH2F("h1", "Histogram (W,Q^{2})_2d", 186, 1.08, 2, 440, 0, 12);
 TH1F* h3 = new TH1F("h3", "Histogram W", 186, 1.08, 2);
-TH1F* h4 = new TH1F("h4", "Histogram Q^{2}", 440, 0, 5);
+TH1F* h4 = new TH1F("h4", "Histogram Q^{2}", 440, 0, 12);
 TH2* h5 = new TH2F("h5", "Histogram (#phi,cos(#theta^{*}))", 180, 0, 2*M_PI, 100, -1 , 1);
 
 int main(int argc, char* argv[])
@@ -16,7 +16,7 @@ int main(int argc, char* argv[])
 	input_check(argc, argv); 
 	if(seed_ == 0){seed_ = time(NULL);}
 	srand(seed_);
-	if(rad_corr){counter_ = 10; inter = 3;}
+	if(rad_corr){counter_ = 5; inter = 3;}
 	
 	for(int k = 0; k < N; k += inter)
 	{
