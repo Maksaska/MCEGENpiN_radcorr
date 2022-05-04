@@ -3,9 +3,9 @@
 using namespace std;
 
 auto c1 = new TCanvas("c1", "Histogram", 1280, 1080);
-TH2* h1 = new TH2F("h1", "Histogram (W,Q^{2})_2d", 186, 1.08, 2, 440, 0, 6);
-TH1F* h3 = new TH1F("h3", "Histogram W", 186, 1.08, 2);
-TH1F* h4 = new TH1F("h4", "Histogram Q^{2}", 440, 0, 6);
+TH2* h1 = new TH2F("h1", "Histogram (W,Q^{2})_2d", 186, 1.08, 8, 440, 0, 32);
+TH1F* h3 = new TH1F("h3", "Histogram W", 186, 1.08, 8);
+TH1F* h4 = new TH1F("h4", "Histogram Q^{2}", 440, 0, 32);
 TH2* h5 = new TH2F("h5", "Histogram (#phi,cos(#theta^{*}))", 180, 0, 2*M_PI, 100, -1 , 1);
 
 int main(int argc, char* argv[])

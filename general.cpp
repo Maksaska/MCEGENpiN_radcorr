@@ -94,6 +94,10 @@ void input_check(int argc, char* argv[])
                             {"seed", required_argument, NULL, 's'},
                             {NULL, 0, NULL, 0}
                                 };
+    const char* data_path = std::getenv("MCEGENpiN_radcorr_path");
+    source = string(data_path) + "/Data/pi0p.csv";
+    source_interp = string(data_path) + "/Data/pi0p_int.csv";
+
     while ((rez=getopt_long(argc, argv, short_options, long_options, &option_index)) != -1)
     {
         switch(rez)
@@ -101,9 +105,9 @@ void input_check(int argc, char* argv[])
             case 'n':
             {
                 channel = false;
-                path = "MCEGENpiN_radcorr.dat";
-                source = "pin.csv";
-                source_interp = "pin_int.csv";
+                path = string(data_path) + "/MCEGENpiN_radcorr.dat";
+                source = string(data_path) + "/Data/pin.csv";
+                source_interp = string(data_path) + "/Data/pin_int.csv";
                 break;
             };
             case 'w':
@@ -180,7 +184,7 @@ void input_check(int argc, char* argv[])
     };
 
     cout << " ------------------------------------------------------------------- " << endl;
-    cout << "| Monte Carlo event generator for exclusive pion electroproduction  | \n| with radiative corrections              \"MCEGENpiN_radcorr V7f\"   |       \n|                                                                   |\n|     Authors: Davydov M. - MSU, Physics dep.                       |\n|              Isupov E.  - MSU, SINP                               |\n|                                                                   |\n| https://github.com/Maksaska/pi0p-pin-generator                    |\n ------------------------------------------------------------------- " << endl;
+    cout << "| Monte Carlo event generator for exclusive pion electroproduction  | \n| with radiative corrections              \"MCEGENpiN_radcorr V7f\"   |       \n|                                                                   |\n|     Authors: Davydov M. - MSU, Physics dep.                       |\n|              Isupov E.  - MSU, SINP                               |\n|                                                                   |\n| https://github.com/Maksaska/MCEGENpiN_radcorr            |\n ------------------------------------------------------------------- " << endl;
 
     cout << endl;
 
