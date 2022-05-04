@@ -94,9 +94,18 @@ void input_check(int argc, char* argv[])
                             {"seed", required_argument, NULL, 's'},
                             {NULL, 0, NULL, 0}
                                 };
-    const char* data_path = std::getenv("MCEGENpiN_radcorr_path");
-    source = string(data_path) + "/Data/pi0p.csv";
-    source_interp = string(data_path) + "/Data/pi0p_int.csv";
+    
+    std::string data_path;  
+    
+    if(getenv(“MCEGENpiN_radcorr_path”) != NULL){
+        data_path = getenv(“MCEGENpiN_radcorr_path”);
+    }
+    else {
+        data_path = “.”;
+    }
+    
+    source = data_path + "/Data/pi0p.csv";
+    source_interp = data_path + "/Data/pi0p_int.csv";
 
     while ((rez=getopt_long(argc, argv, short_options, long_options, &option_index)) != -1)
     {
@@ -105,9 +114,9 @@ void input_check(int argc, char* argv[])
             case 'n':
             {
                 channel = false;
-                path = string(data_path) + "/MCEGENpiN_radcorr.dat";
-                source = string(data_path) + "/Data/pin.csv";
-                source_interp = string(data_path) + "/Data/pin_int.csv";
+                path = data_path + "/MCEGENpiN_radcorr.dat";
+                source = data_path + "/Data/pin.csv";
+                source_interp = data_path + "/Data/pin_int.csv";
                 break;
             };
             case 'w':
