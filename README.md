@@ -62,20 +62,23 @@ The additional factor for the weight is also calculated here. The program comple
 
 As a result, for each <a href="https://www.codecogs.com/eqnedit.php?latex=\{W,&space;Q^2,&space;cos(\theta),&space;\varphi\}" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\{W,&space;Q^2,&space;cos(\theta),&space;\varphi\}" title="\{W, Q^2, cos(\theta), \varphi\}" /></a> point and <a href="https://www.codecogs.com/eqnedit.php?latex=E_{beam},&space;h" target="_blank"><img src="https://latex.codecogs.com/gif.latex?E_{beam},&space;h" title="E_{beam}, h" /></a> (beam polarization) values, this program creates a bunch of outgoing particles with the appropriate kinematic values.
 
-## Usage (local machine)
+## Usage 
+### local machine
 
 1. Install [Root Cern](https://root.cern.ch/building-root)
 2. git clone of the EG: git clone https://github.com/Maksaska/MCEGENpiN_radcorr
 3. Type command: chmod +x compile_gen
 4. Set the path to data:
+  
   setenv MCEGENpiN_radcorr_path "path to generator directory" 
   > setenv MCEGENpiN_radcorr_path ./Downloads/MCEGENpiN_radcorr
+  
   export MCEGENpiN_radcorr_path="path to generator directory"
   > export MCEGENpiN_radcorr_path="./Downloads/MCEGENpiN_radcorr"
 5. Compile with "compile_gen",i.e. ./compile_gen
 6. Start the compiled file with ./MCEGENpiN_radcorr command
   
-## Usage (JLab machine)
+### JLab machine
   
 1. git clone of the EG: git clone https://github.com/Maksaska/MCEGENpiN_radcorr
 2. source setup.sh
