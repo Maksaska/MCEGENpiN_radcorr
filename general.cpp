@@ -97,11 +97,11 @@ void input_check(int argc, char* argv[])
     
     std::string data_path;  
     
-    if(getenv(“MCEGENpiN_radcorr_path”) != NULL){
-        data_path = getenv(“MCEGENpiN_radcorr_path”);
+    if(getenv("MCEGENpiN_radcorr_path") != NULL){
+        data_path = getenv("MCEGENpiN_radcorr_path");
     }
     else {
-        data_path = “.”;
+        data_path = ".";
     }
     
     source = data_path + "/Data/pi0p.csv";
