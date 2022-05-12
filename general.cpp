@@ -33,7 +33,7 @@ void Reading(string Path, vector<vector<double>>& V)
     ifstream File;
     double dub; int w(1); vector<double> Numbers;
 
-    File.open(Path,fstream::in | fstream::out | fstream::app);
+    File.open(Path);
 
     if (!File.is_open())
     {
