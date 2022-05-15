@@ -114,7 +114,7 @@ void Event::print_lund(string& Path)
 
     for(long unsigned int i = 0; i < bunch.size(); i++)
     {
-        File << i+1 << "\t0\t0\t" << bunch[i].id << "\t0\t0\t" << (bunch[i].p).Px() << "\t" <<  (bunch[i].p).Py() << "\t"
+        File << i+1 << "\t0\t1\t" << bunch[i].id << "\t0\t0\t" << (bunch[i].p).Px() << "\t" <<  (bunch[i].p).Py() << "\t"
         << (bunch[i].p).Pz() << "\t" << (bunch[i].p).E() << "\t" << bunch[i].mass << "\t" << x << "\t" << y << "\t" << z << endl;
     }
 
