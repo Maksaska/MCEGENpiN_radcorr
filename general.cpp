@@ -999,7 +999,7 @@ void generate_particle(const int& k)
             }
         }
 
-        S = 0;
+        S = 1;
     }
 
     W_ = W;
