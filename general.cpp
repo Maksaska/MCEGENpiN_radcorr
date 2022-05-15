@@ -76,7 +76,7 @@ void Reading(string Path, vector<vector<double>>& V)
 
 void input_check(int argc, char* argv[])
 {
-    const char* short_options = "nwe:r:l:N:h:z:x:c:v:pmas:"; int rez; int option_index;
+    const char* short_options = "nwe:r:l:N:h:z:x:c:v:pmas:i:"; int rez; int option_index;
 
     const struct option long_options[] = {
                         {"beam_energy", required_argument, NULL, 'e'},
@@ -92,6 +92,7 @@ void input_check(int argc, char* argv[])
                             {"trig", required_argument, NULL, 'N'},
                             {"docker", no_argument, NULL, 'a'},
                             {"seed", required_argument, NULL, 's'},
+                            {"output", required_argument, NULL, 'i'},
                             {NULL, 0, NULL, 0}
                                 };
     
@@ -111,10 +112,14 @@ void input_check(int argc, char* argv[])
     {
         switch(rez)
         {
+            case 'i':
+            {
+                path = str(optarg);
+                break;
+            };
             case 'n':
             {
                 channel = false;
-                path = data_path + "/MCEGENpiN_radcorr.dat";
                 source = data_path + "/Data/pin.csv";
                 source_interp = data_path + "/Data/pin_int.csv";
                 break;
@@ -191,6 +196,8 @@ void input_check(int argc, char* argv[])
             };
         };
     };
+    
+    path = data_path + "/" + path;
 
     cout << " ------------------------------------------------------------------- " << endl;
     cout << "| Monte Carlo event generator for exclusive pion electroproduction  | \n| with radiative corrections              \"MCEGENpiN_radcorr V7f\"   |       \n|                                                                   |\n|     Authors: Davydov M. - MSU, Physics dep.                       |\n|              Isupov E.  - MSU, SINP                               |\n|                                                                   |\n| https://github.com/Maksaska/MCEGENpiN_radcorr            |\n ------------------------------------------------------------------- " << endl;
