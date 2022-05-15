@@ -114,7 +114,7 @@ void input_check(int argc, char* argv[])
         {
             case 'i':
             {
-                path = str(optarg);
+                path = to_string(optarg);
                 break;
             };
             case 'n':
