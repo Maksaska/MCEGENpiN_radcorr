@@ -1142,9 +1142,9 @@ void generate_particle(const int& k)
         bob.set_beam(E0, h);
         bob.set_cm_system(); // Born
         bob.set_coordinates(R, L);
-        bob.set_section(S);
-        add_hadrons(W, Q2, theta, phi, bob);
+        bob.set_section(S);        
         add_electron(W, Q2, bob);
+        add_hadrons(W, Q2, theta, phi, bob);
         bob.cm_to_lab(W, Q2);
         bob.print_lund(path);
 
