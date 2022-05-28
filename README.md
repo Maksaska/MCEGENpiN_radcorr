@@ -1,5 +1,5 @@
-# MCEGENpiN_radcorr V7f
-This V7f version of the newest MC event generator for exclusive single pion electroproduction allows you to generate a massive statistics for the large invariants' scales. Relatively fast and effective procedures in conjunction with model representations make this program a convenient and reliable choice for data analysis in particle physics.
+# MCEGENpiN_radcorr V8a
+This V8a version of the newest MC event generator for exclusive single pion electroproduction allows you to generate a massive statistics for the large invariants' scales. Relatively fast and effective procedures in conjunction with model representations make this program a convenient and reliable choice for data analysis in particle physics.
 
 ## What's it all about?
 One of the biggest parts of any experiments in physics is data analysis. Hadron physics with [CLAS12 spectrometer](https://www.jlab.org/physics/hall-b/clas12) gets pretty tricky when one should deal with its efficiency. This is where programs like this generator come quite handy. Not only do they allow you to restore the original cross-section, but they also can be used as an instrument for event selection development. 
@@ -101,6 +101,7 @@ Requirements: [Root Cern](https://root.cern/)
 * --weight - switch for uniform distributions in kinematically admissible phase space
 * -n - switch for <a href="https://www.codecogs.com/eqnedit.php?latex=\pi^&plus;n" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\pi^&plus;n" title="\pi^+n" /></a> channel. (Charged pion channel is chosen when entered. No input value required)
 * --trig - number of events
+* --trunc_out - LUND output will be written in 10k events per file format in the output destination directory
 * --docker - Sets all the parametes to default values
 * --seed - Used to initialize the event generator's RNG. Its value is a 32-bit RNG seed based on system clock with microsecond precision.
 * -h - beam polarization ("0" when beam is not polarized)
