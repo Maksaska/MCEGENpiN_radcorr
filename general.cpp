@@ -21,7 +21,7 @@ void add_rad_photon(const double& Erad, const double& ang1, const double& ang2, 
 bool check_ps(const double& W_, const double& Q2_, const double& E_beam); /*   Checks the phase space   */
 
 double W_MS(0), Q2_MS(0), theta_MS(0), phi_MS(0), S_MS(0);
-bool first_HM(true);
+bool first_HM(true), truncate_out(false);
 
 /*    -------------------      */
 int Total_Number(0), Accepted_Number(0);
@@ -76,7 +76,7 @@ void Reading(string Path, vector<vector<double>>& V)
 
 void input_check(int argc, char* argv[])
 {
-    const char* short_options = "nwe:r:l:N:h:z:x:c:v:pmas:i:"; int rez; int option_index;
+    const char* short_options = "nwe:r:l:N:h:z:x:c:v:pmas:i:t"; int rez; int option_index;
 
     const struct option long_options[] = {
                         {"beam_energy", required_argument, NULL, 'e'},
@@ -90,21 +90,22 @@ void input_check(int argc, char* argv[])
                             {"RC", no_argument, NULL, 'm'},
                             {"weight", no_argument, NULL, 'w'},
                             {"trig", required_argument, NULL, 'N'},
+                            {"trunc_out", no_argument, NULL, 't'},
                             {"docker", no_argument, NULL, 'a'},
                             {"seed", required_argument, NULL, 's'},
                             {"output", required_argument, NULL, 'i'},
                             {NULL, 0, NULL, 0}
                                 };
-    
-    std::string data_path;  
-    
+
+    std::string data_path;
+
     if(getenv("MCEGENpiN_radcorr_path") != NULL){
         data_path = getenv("MCEGENpiN_radcorr_path");
     }
     else {
         data_path = ".";
     }
-    
+
     source = data_path + "/Data/pi0p.csv";
     source_interp = data_path + "/Data/pi0p_int.csv";
 
@@ -127,6 +128,11 @@ void input_check(int argc, char* argv[])
             case 'w':
             {
                 method = true;
+                break;
+            };
+            case 't':
+            {
+                truncate_out = true;
                 break;
             };
             case 'p':
@@ -196,11 +202,11 @@ void input_check(int argc, char* argv[])
             };
         };
     };
-    
+
     path = data_path + "/" + path;
 
     cout << " ------------------------------------------------------------------- " << endl;
-    cout << "| Monte Carlo event generator for exclusive pion electroproduction  | \n| with radiative corrections              \"MCEGENpiN_radcorr V7f\"   |       \n|                                                                   |\n|     Authors: Davydov M. - MSU, Physics dep.                       |\n|              Isupov E.  - MSU, SINP                               |\n|                                                                   |\n| https://github.com/Maksaska/MCEGENpiN_radcorr            |\n ------------------------------------------------------------------- " << endl;
+    cout << "| Monte Carlo event generator for exclusive pion electroproduction  | \n| with radiative corrections              \"MCEGENpiN_radcorr V8a\"   |       \n|                                                                   |\n|     Authors: Davydov M. - MSU, Physics dep.                       |\n|              Isupov E.  - MSU, SINP                               |\n|                                                                   |\n| https://github.com/Maksaska/MCEGENpiN_radcorr                     |\n ------------------------------------------------------------------- " << endl;
 
     cout << endl;
 
@@ -402,7 +408,7 @@ double Section(const double& W,  const double& Q2, const double& theta,  const d
 
     S = S_t + eps*S_l + eps*S_tt*cos(2*phi) + sqrt(2*eps*(1+eps))*S_lt*cos(phi) + double(h)*S_lt_pr*sin(phi);
 
-    S = Gamma_flux*S;
+    S = Gamma_flux*S; H.clear();
 
     return S;
 }
@@ -1031,7 +1037,8 @@ void generate_particle(const int& k)
         add_hadrons(W_, Q2_, theta, phi, bob);
         add_electron(W, Q2, bob);
         bob.cm_to_lab(W, Q2);
-        bob.print_lund(path);
+        bob.print_vector();
+        //bob.print_lund(path);
 
         if(histogram)
         {
@@ -1078,7 +1085,8 @@ void generate_particle(const int& k)
                 add_rad_photon(Erad, ang1, ang2, bob);
             }
 
-            bob.print_lund(path);
+            bob.print_vector();
+            //bob.print_lund(path);
 
             if(histogram)
             {
@@ -1127,7 +1135,8 @@ void generate_particle(const int& k)
                 add_rad_photon(Erad, ang1, ang2, bob);
             }
 
-            bob.print_lund(path);
+            bob.print_vector();
+            //bob.print_lund(path);
 
             if(histogram)
             {
@@ -1142,11 +1151,12 @@ void generate_particle(const int& k)
         bob.set_beam(E0, h);
         bob.set_cm_system(); // Born
         bob.set_coordinates(R, L);
-        bob.set_section(S);        
+        bob.set_section(S);
         add_electron(W, Q2, bob);
         add_hadrons(W, Q2, theta, phi, bob);
         bob.cm_to_lab(W, Q2);
-        bob.print_lund(path);
+        bob.print_vector();
+        //bob.print_lund(path);
 
         if(histogram and method)
         {

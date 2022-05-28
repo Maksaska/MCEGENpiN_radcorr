@@ -4,6 +4,8 @@
 
 using namespace std;
 
+vector<vector<double>> LUND_OUTPUT;
+
 struct Particle
 {
     TLorentzVector p;
@@ -38,6 +40,7 @@ class Event
         void set_section(double&);
         void add_particle(Particle&);
         void clear_event(){bunch.clear();}
+        void print_vector();
         void print_lund(string&);
         void set_cm_system();
         void set_lab_system();
@@ -102,6 +105,30 @@ void Event::set_section(double& S)
 void Event::add_particle(Particle& buff)
 {
     bunch.push_back(buff);
+}
+
+void Event::print_vector()
+{
+    vector<double> buff;
+    buff.push_back(bunch.size());
+    buff.push_back(1); buff.push_back(1); buff.push_back(0);
+    buff.push_back(beam_polarization); buff.push_back(11);
+    buff.push_back(beam_energy); buff.push_back(2212);
+    buff.push_back(0); buff.push_back(cross_section);
+
+    LUND_OUTPUT.push_back(buff); buff.clear();
+
+    for(long unsigned int i = 0; i < bunch.size(); i++)
+    {
+        buff.push_back(i+1); buff.push_back(0); buff.push_back(1);
+        buff.push_back(bunch[i].id); buff.push_back(0); buff.push_back(0);
+        buff.push_back((bunch[i].p).Px()); buff.push_back((bunch[i].p).Py());
+        buff.push_back((bunch[i].p).Pz()); buff.push_back((bunch[i].p).E());
+        buff.push_back(bunch[i].mass);
+        buff.push_back(x); buff.push_back(y); buff.push_back(z);
+
+        LUND_OUTPUT.push_back(buff); buff.clear();
+    }
 }
 
 void Event::print_lund(string& Path)

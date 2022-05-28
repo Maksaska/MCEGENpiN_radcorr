@@ -14,24 +14,79 @@ int main(int argc, char* argv[])
     auto finish_ = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed_ = (finish_ - start);
 
-    int counter_(500), inter(1);
+    int counter_(500), inter(1), counter_events(0), limit(0);
 
     input_check(argc, argv);
     if(seed_ == 0){seed_ = time(NULL);}
     srand(seed_);
     if(rad_corr){counter_ = 5; inter = 3;}
 
-    for(int k = 0; k < N; k += inter)
+    ofstream File;
+    string PATH;
+    int id_dot = path.find_last_of('.');
+
+    if(truncate_out)
     {
-        generate_particle(k);
-        if(k % counter_ == 0)
+        for(int counter = 0; counter < ceil(double(N)/10000.0); counter++)
         {
+            limit = (counter == ceil(double(N)/10000.0) - 1) ? N - counter*10000 : 10000;
+
+            for(int k = 0; k < limit; k += inter)
+            {
+                generate_particle(k);
+            }
+
+            PATH = path;
+            PATH.insert(id_dot,std::to_string(counter));
+
+            File.open(PATH,fstream::in | fstream::out | fstream::app);
+
+            for(auto i:LUND_OUTPUT)
+            {
+                for(auto j:i)
+                {
+                    File << j << "\t";
+                }
+                File << endl;
+            }
+
             finish_ = std::chrono::high_resolution_clock::now();
-            elapsed_ = double(N - k)*(finish_ - start)/double(k);
-            if(!method) cout << "Acceptance Rate: " << floor(10000*(double(Accepted_Number)/double(Total_Number)))/100 << "%\tStand by ..." << k*100/N << "%   Time remaining: " << floor(elapsed_.count()/3600) << " h " << floor((elapsed_.count() - 3600*floor(elapsed_.count()/3600))/60) << " min " << elapsed_.count() - 60*floor(elapsed_.count()/60) << " s             \r" << flush;
-            else cout << "Stand by ..." << k*100/N << "%   Time remaining: " << floor(elapsed_.count()/3600) << " h " << floor((elapsed_.count() - 3600*floor(elapsed_.count()/3600))/60) << " min " << elapsed_.count() - 60*floor(elapsed_.count()/60) << " s             \r" << flush;
+            elapsed_ = double(ceil(double(N)/10000.0) - 1 - counter)*(finish_ - start)/double(counter);
+            cout << "Stand by ..." << ceil(counter*10000.0/(ceil(double(N)/10000.0) - 1))/100.0 << "%   Time remaining: " << floor(elapsed_.count()/3600) << " h " << floor((elapsed_.count() - 3600*floor(elapsed_.count()/3600))/60) << " min " << elapsed_.count() - 60*floor(elapsed_.count()/60) << " s             \r" << flush;
+
+            File.close(); LUND_OUTPUT.clear();
         }
+    }else
+    {
+        for(int k = 0; k < N; k += inter)
+        {
+            generate_particle(k);
+            if(k % counter_ == 0)
+            {
+                finish_ = std::chrono::high_resolution_clock::now();
+                elapsed_ = double(N - k)*(finish_ - start)/double(k);
+                if(!method) cout << "Acceptance Rate: " << floor(10000*(double(Accepted_Number)/double(Total_Number)))/100 << "%\tStand by ..." << k*100/N << "%   Time remaining: " << floor(elapsed_.count()/3600) << " h " << floor((elapsed_.count() - 3600*floor(elapsed_.count()/3600))/60) << " min " << elapsed_.count() - 60*floor(elapsed_.count()/60) << " s             \r" << flush;
+                else cout << "Stand by ..." << k*100/N << "%   Time remaining: " << floor(elapsed_.count()/3600) << " h " << floor((elapsed_.count() - 3600*floor(elapsed_.count()/3600))/60) << " min " << elapsed_.count() - 60*floor(elapsed_.count()/60) << " s             \r" << flush;
+            }
+        }
+
+        File.open(path,fstream::in | fstream::out | fstream::app);
+
+        for(int i = 0; i < LUND_OUTPUT.size(); i++)
+        {
+            for(auto j:LUND_OUTPUT[i])
+            {
+                File << j << "\t";
+            }
+            File << endl;
+
+            if(i % counter_ == 0) cout << "Recording LUND ... " << ceil((i+1)*10000.0/LUND_OUTPUT.size())/100.0 << "%                                                                                  \r" << flush;
+        }
+
+        File.close();
     }
+
+    cout << "Recording complete                                            " << endl;
 
     if(histogram)
     {
@@ -77,6 +132,8 @@ int main(int argc, char* argv[])
     auto finish = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed = finish - start;
     cout << "Elapsed time: " << floor(elapsed.count()/3600) << " h " << floor((elapsed.count() - 3600*floor(elapsed.count()/3600))/60) << " min " << elapsed.count() - 60*floor(elapsed.count()/60) << " s\n";
+
+    data.clear(); data_interp.clear(); values_rad.clear(), LUND_OUTPUT.clear();
 
     return 0;
 }

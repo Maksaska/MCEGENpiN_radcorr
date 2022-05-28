@@ -10,15 +10,16 @@
 #include "TCanvas.h"
 #include "TH1F.h"
 #include "TH2F.h"
+#include <fstream>
 
 using namespace std;
 
 extern double E0, R, L, W_min, W_max, Q2_min, Q2_max, delta;
-extern vector<vector<double>> data, data_interp;
+extern vector<vector<double>> data, data_interp, LUND_OUTPUT;
 extern int h, N;
 extern double seed_;
 extern string path, source, source_interp;
-extern bool channel, method, histogram, rad_corr;
+extern bool channel, method, histogram, rad_corr, truncate_out;
 extern double m_p, m_n, m_pip, m_pi0, m_e;
 extern vector<double> values_rad;
 
