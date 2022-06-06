@@ -191,9 +191,9 @@ void input_check(int argc, char* argv[])
                 break;
             };
             case 'a': {
-                E0 = 6.5; R = 1; L = 10; W_min = 1.08; W_max = 2.0; Q2_min = 0.05; Q2_max = 5.0;
-                h = 0; N = 1000000;
-                channel = true; method = false; histogram = false; rad_corr = false;
+                // E0 = 6.5; R = 1; L = 10; W_min = 1.08; W_max = 2.0; Q2_min = 0.05; Q2_max = 5.0;
+                // h = 0; N = 1000000;
+                // channel = true; method = false; histogram = false; rad_corr = false;
                 break;
             };
             case '?': default: {
