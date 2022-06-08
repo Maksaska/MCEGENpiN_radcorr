@@ -8,7 +8,7 @@ using namespace std;
 double E0(6.5), R(1), L(10), W_min(1.08), W_max(2.0), Q2_min(0.05), Q2_max(5.0);
 int h(0), N(1000000); double seed_(0);
 bool channel(true), method(false), histogram(false), rad_corr(false);
-string path = "MCEGENpiN_radcorr.dat";
+string path = "./MCEGENpiN_radcorr.dat";
 string source = "pi0p.csv";
 string source_interp = "pi0p_int.csv";
 vector<vector<double>> data, data_interp;
@@ -203,7 +203,7 @@ void input_check(int argc, char* argv[])
         };
     };
 
-    path = data_path + "/" + path;
+    //path = data_path + "/" + path;
 
     cout << " ------------------------------------------------------------------- " << endl;
     cout << "| Monte Carlo event generator for exclusive pion electroproduction  | \n| with radiative corrections              \"MCEGENpiN_radcorr V8a\"   |       \n|                                                                   |\n|     Authors: Davydov M. - MSU, Physics dep.                       |\n|              Isupov E.  - MSU, SINP                               |\n|                                                                   |\n| https://github.com/Maksaska/MCEGENpiN_radcorr                     |\n ------------------------------------------------------------------- " << endl;
