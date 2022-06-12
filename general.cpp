@@ -21,7 +21,7 @@ void add_rad_photon(const double& Erad, const double& ang1, const double& ang2, 
 bool check_ps(const double& W_, const double& Q2_, const double& E_beam); /*   Checks the phase space   */
 
 double W_MS(0), Q2_MS(0), theta_MS(0), phi_MS(0), S_MS(0);
-bool first_HM(true), truncate_out(false);
+bool first_HM(true), truncate_out(false), extra_Q2(false);
 
 /*    -------------------      */
 int Total_Number(0), Accepted_Number(0);
@@ -76,7 +76,7 @@ void Reading(string Path, vector<vector<double>>& V)
 
 void input_check(int argc, char* argv[])
 {
-    const char* short_options = "nwe:r:l:N:h:z:x:c:v:pmas:i:t"; int rez; int option_index;
+    const char* short_options = "nwe:r:l:N:h:z:x:c:v:pmas:i:tf"; int rez; int option_index;
 
     const struct option long_options[] = {
                         {"beam_energy", required_argument, NULL, 'e'},
@@ -92,6 +92,7 @@ void input_check(int argc, char* argv[])
                             {"trig", required_argument, NULL, 'N'},
                             {"trunc_out", no_argument, NULL, 't'},
                             {"docker", no_argument, NULL, 'a'},
+                            {"extra_Q2", no_argument, NULL, 'f'},
                             {"seed", required_argument, NULL, 's'},
                             {"output", required_argument, NULL, 'i'},
                             {NULL, 0, NULL, 0}
@@ -116,6 +117,11 @@ void input_check(int argc, char* argv[])
             case 'i':
             {
                 path = optarg;
+                break;
+            };
+            case 'f':
+            {
+                extra_Q2 = true;
                 break;
             };
             case 'n':
@@ -206,7 +212,7 @@ void input_check(int argc, char* argv[])
     //path = data_path + "/" + path;
 
     cout << " ------------------------------------------------------------------- " << endl;
-    cout << "| Monte Carlo event generator for exclusive pion electroproduction  | \n| with radiative corrections              \"MCEGENpiN_radcorr V8a\"   |       \n|                                                                   |\n|     Authors: Davydov M. - MSU, Physics dep.                       |\n|              Isupov E.  - MSU, SINP                               |\n|                                                                   |\n| https://github.com/Maksaska/MCEGENpiN_radcorr                     |\n ------------------------------------------------------------------- " << endl;
+    cout << "| Monte Carlo event generator for exclusive pion electroproduction  | \n| with radiative corrections              \"MCEGENpiN_radcorr V9a\"   |       \n|                                                                   |\n|     Authors: Davydov M. - MSU, Physics dep.                       |\n|              Isupov E.  - MSU, SINP                               |\n|                                                                   |\n| https://github.com/Maksaska/MCEGENpiN_radcorr                     |\n ------------------------------------------------------------------- " << endl;
 
     cout << endl;
 
@@ -219,6 +225,8 @@ void input_check(int argc, char* argv[])
     if(method) cout << "Uniform distribution with weights" << endl;
     else cout << "Metropolis–Hastings MCMC algorithm" << endl;
     cout << "Number of events: " << N << endl;
+    if(extra_Q2) cout << "All multiples (amplitudes) extrapolated as 1/Q4 (except M1+ ~ 1/Q6)" << endl;
+    else cout << "All multiples (amplitudes) extrapolated as 1/Q2 (except M1+ ~ 1/Q6)" << endl;
     if(histogram){cout << "Histograms will be created\n" << endl;}
     if(rad_corr){cout << "Radiative corrections: Enabled\n" << endl;}
     else{cout << "Radiative corrections: Disabled\n" << endl;}
@@ -333,14 +341,34 @@ vector<complex<double>> Finder(const double& W,  const double& Q2)
 vector<complex<double>> Helicity_amplitudes(const double& W,  const double& Q2, const double& theta)
 {
     vector<complex<double>> AMP, H; double l;
-    complex<double> buff; buff = 0;
+    complex<double> buff; buff = 0; bool extra_check(false);
 
-    AMP = Finder(W, Q2);
+    double factor_all(1), factor_M1(1), Q2_1(0);
+    Q2_1 = Q2;
+
+    if(Q2 > 5.0)
+    {
+        Q2_1 = 5.0;
+        factor_all = 5/Q2;
+        factor_M1 = 5/Q2;
+
+        if(extra_Q2)
+        {
+            factor_all = 25/pow(Q2, 2);
+            factor_M1 = 25/pow(Q2, 2);
+        }
+
+        extra_check = true;
+    }
+
+    AMP = Finder(W, Q2_1);
 
     for(int i = 0; i < 6; i++) // H1
     {
         l = double(i);
-        buff += (AMP[l] - AMP[l+14] - AMP[l+8] - AMP[l+22])*(P(2,i,theta) - P(2,i+1,theta));
+        if(l == 1 and extra_check) factor_M1 = pow(5, 3)/pow(Q2, 3);
+        buff += (factor_all*AMP[l] - factor_M1*AMP[l+14] - factor_all*AMP[l+8] - factor_all*AMP[l+22])*(P(2,i,theta) - P(2,i+1,theta));
+        if(l == 1 and extra_check) factor_M1 = factor_all;
     }
     buff = buff*sin(theta)*cos(theta/2)/sqrt(2);
     H.push_back(buff); buff = 0;
@@ -348,7 +376,9 @@ vector<complex<double>> Helicity_amplitudes(const double& W,  const double& Q2, 
     for(int i = 0; i < 6; i++) // H2
     {
         l = double(i);
-        buff += ((l+2)*AMP[l] + l*AMP[l+14] + l*AMP[l+8] - (l+2)*AMP[l+22])*(P(1,i,theta) - P(1,i+1,theta));
+        if(l == 1 and extra_check) factor_M1 = pow(5, 3)/pow(Q2, 3);
+        buff += (factor_all*(l+2)*AMP[l] + factor_M1*l*AMP[l+14] + factor_all*l*AMP[l+8] - factor_all*(l+2)*AMP[l+22])*(P(1,i,theta) - P(1,i+1,theta));
+        if(l == 1 and extra_check) factor_M1 = factor_all;
     }
     buff = buff*cos(theta/2)/sqrt(2);
     H.push_back(buff); buff = 0;
@@ -356,7 +386,9 @@ vector<complex<double>> Helicity_amplitudes(const double& W,  const double& Q2, 
     for(int i = 0; i < 6; i++) // H3
     {
         l = double(i);
-        buff += (AMP[l] - AMP[l+14] + AMP[l+8] + AMP[l+22])*(P(2,i,theta) + P(2,i+1,theta));
+        if(l == 1 and extra_check) factor_M1 = pow(5, 3)/pow(Q2, 3);
+        buff += (factor_all*AMP[l] - factor_M1*AMP[l+14] + factor_all*AMP[l+8] + factor_all*AMP[l+22])*(P(2,i,theta) + P(2,i+1,theta));
+        if(l == 1 and extra_check) factor_M1 = factor_all;
     }
     buff = buff*sin(theta)*sin(theta/2)/sqrt(2);
     H.push_back(buff); buff = 0;
@@ -364,7 +396,9 @@ vector<complex<double>> Helicity_amplitudes(const double& W,  const double& Q2, 
     for(int i = 0; i < 6; i++) // H4
     {
         l = double(i);
-        buff += ((l+2)*AMP[l] + l*AMP[l+14] - l*AMP[l+8] + (l+2)*AMP[l+22])*(P(1,i,theta) + P(1,i+1,theta));
+        if(l == 1 and extra_check) factor_M1 = pow(5, 3)/pow(Q2, 3);
+        buff += (factor_all*(l+2)*AMP[l] + factor_M1*l*AMP[l+14] - factor_all*l*AMP[l+8] + factor_all*(l+2)*AMP[l+22])*(P(1,i,theta) + P(1,i+1,theta));
+        if(l == 1 and extra_check) factor_M1 = factor_all;
     }
     buff = buff*sin(theta/2)/sqrt(2);
     H.push_back(buff);buff = 0;
@@ -372,7 +406,7 @@ vector<complex<double>> Helicity_amplitudes(const double& W,  const double& Q2, 
     for(int i = 0; i < 6; i++) // H5
     {
         l = double(i);
-        buff += (l+1)*(AMP[l+28] + AMP[l+36])*(P(1,i,theta) - P(1,i+1,theta));
+        buff += factor_all*(l+1)*(AMP[l+28] + AMP[l+36])*(P(1,i,theta) - P(1,i+1,theta));
     }
     buff = buff*cos(theta/2)*sqrt(Q2)/k_mod(W,Q2);
     H.push_back(buff);buff = 0;
@@ -380,7 +414,7 @@ vector<complex<double>> Helicity_amplitudes(const double& W,  const double& Q2, 
     for(int i = 0; i < 6; i++) // H6
     {
         l = double(i);
-        buff += (l+1)*(AMP[l+28] - AMP[l+36])*(P(1,i,theta) + P(1,i+1,theta));
+        buff += factor_all*(l+1)*(AMP[l+28] - AMP[l+36])*(P(1,i,theta) + P(1,i+1,theta));
     }
     buff = buff*sin(theta/2)*sqrt(Q2)/k_mod(W,Q2);
     H.push_back(buff);
@@ -531,7 +565,7 @@ double Section_interp_int(const double& W, const double& Q2, const double& E_ini
     return S;
 }
 
-double Section_interp_Q2_extra(const double& W,  const double& Q2, const double& theta,  const double& phi)
+/*double Section_interp_Q2_extra(const double& W,  const double& Q2, const double& theta,  const double& phi)
 {
     double C1, C2, y1, y2, Q2_1(4.0), Q2_2(5.0);
 
@@ -542,7 +576,7 @@ double Section_interp_Q2_extra(const double& W,  const double& Q2, const double&
     C2 = y1*pow(Q2_1, C1);
 
     return C2/pow(Q2, C1);
-}
+}*/
 
 double Section_interp_int_Q2_extra(const double& W, const double& Q2)
 {
@@ -557,12 +591,12 @@ double Section_interp_int_Q2_extra(const double& W, const double& Q2)
     return C2/pow(Q2, C1);
 }
 
-double Section_interp_int_Q2_extra_R2(const double& W, const double& Q2, const double& E0)
+double Section_interp_int_Q2_extra_R2(const double& W, const double& Q2, const double& E0_beam)
 {
     double C1, C2, y1, y2, Q2_1(4.0), Q2_2(5.0);
 
-    y1 = Section_interp_int(W, Q2_1, E0);
-    y2 = Section_interp_int(W, Q2_2, E0);
+    y1 = Section_interp_int(W, Q2_1, E0_beam);
+    y2 = Section_interp_int(W, Q2_2, E0_beam);
 
     C1 = log(y2/y1)/log(Q2_1/Q2_2);
     C2 = y1*pow(Q2_1, C1);
@@ -980,15 +1014,8 @@ void generate_particle(const int& k)
             phi = fRand(0, 2*M_PI);
         }
 
-        if(W > 2.0 and correct_phase_space)
-        {
-            if(Q2 > 5.0){S = Section_interp_Q2_extra(2.0, Q2, theta, phi);}
-            else{S = Linear(2.0, Q2, theta, phi);}
-        }else if(W <= 2.0 and correct_phase_space)
-        {
-            if(Q2 > 5.0){S = Section_interp_Q2_extra(W, Q2, theta, phi);}
-            else{S = Linear(W, Q2, theta, phi);}
-        }
+        if(W > 2.0 and correct_phase_space) S = Linear(2.0, Q2, theta, phi);
+        else if(W <= 2.0 and correct_phase_space) S = Linear(W, Q2, theta, phi);
     }
 
     if(!method)

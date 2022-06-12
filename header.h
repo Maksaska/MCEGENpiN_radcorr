@@ -19,7 +19,7 @@ extern vector<vector<double>> data, data_interp, LUND_OUTPUT;
 extern int h, N;
 extern double seed_;
 extern string path, source, source_interp;
-extern bool channel, method, histogram, rad_corr, truncate_out;
+extern bool channel, method, histogram, rad_corr, truncate_out, extra_Q2;
 extern double m_p, m_n, m_pip, m_pi0, m_e;
 extern vector<double> values_rad;
 
@@ -75,9 +75,8 @@ double Spence(const double& x); /*   Spence function   */
 double delta_r(const double& W, const double& Q2);
 double ts(const double& W, const double& Q2, const double& iter);
 double tp(const double& W, const double& Q2, const double& iter);
-double Section_interp_Q2_extra(const double& W,  const double& Q2, const double& theta,  const double& phi); /*    Q2 extrapolation with W in [1.08, 2.0] for MAID data   */
 double Section_interp_int_Q2_extra(const double& W, const double& Q2); /*  Q2 extrapolation with W in [1.08, 2.0] for R3 */
-double Section_interp_int_Q2_extra_R2(const double& W, const double& Q2, const double& E0); /*  Q2 extrapolation with W in [1.08, 2.0] for R2 */
+double Section_interp_int_Q2_extra_R2(const double& W, const double& Q2, const double& E0_beam); /*  Q2 extrapolation with W in [1.08, 2.0] for R2 */
 double R1(const double& W, const double& Q2); /*   soft region for RC   */
 double R2(const double& W, const double& Q2); /*   Hard radiation with init. elec.   */
 double R3(const double& W, const double& Q2); /*   Hard radiation with final elec.   */

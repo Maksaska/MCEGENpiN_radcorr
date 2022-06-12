@@ -3,9 +3,9 @@
 using namespace std;
 
 auto c1 = new TCanvas("c1", "Histogram", 1280, 1080);
-TH2* h1 = new TH2F("h1", "Histogram (W,Q^{2})_2d", 186, 1.08, 8, 440, 0, 32);
-TH1F* h3 = new TH1F("h3", "Histogram W", 186, 1.08, 8);
-TH1F* h4 = new TH1F("h4", "Histogram Q^{2}", 440, 0, 32);
+TH2* h1 = new TH2F("h1", "Histogram (W,Q^{2})_2d", 9600, 0.0, 40.0, 3200, 0.0, 40.0);
+TH1F* h3 = new TH1F("h3", "Histogram W", 9600, 0.0, 40.0);
+TH1F* h4 = new TH1F("h4", "Histogram Q^{2}", 3200, 0.0, 40.0);
 TH2* h5 = new TH2F("h5", "Histogram (#phi,cos(#theta^{*}))", 180, 0, 2*M_PI, 100, -1 , 1);
 
 int main(int argc, char* argv[])
@@ -100,6 +100,8 @@ int main(int argc, char* argv[])
 
         c1->cd(1);
         c1->cd(1)->SetLogz();
+        h1->SetAxisRange(W_min-0.1, W_max+0.1, "X");
+        h1->SetAxisRange(Q2_min-0.5, Q2_max+0.5, "Y");
         h1->Draw("COL");
 
         c1->cd(2);
@@ -117,12 +119,14 @@ int main(int argc, char* argv[])
         h3->GetXaxis()->CenterTitle(true);
 
         c1->cd(3);
+        h3->SetAxisRange(W_min-0.1, W_max+0.1);
         h3->Draw();
 
         h4->GetXaxis()->SetTitle("Q^{2}, GeV^{2}");
         h4->GetXaxis()->CenterTitle(true);
 
         c1->cd(4);
+        h4->SetAxisRange(Q2_min-0.5, Q2_max+0.5);
         c1->cd(4)->SetLogy();
         h4->Draw();
 
