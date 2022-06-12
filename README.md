@@ -1,4 +1,4 @@
-# MCEGENpiN_radcorr V8a
+# MCEGENpiN_radcorr V9a
 This V8a version of the newest MC event generator for exclusive single pion electroproduction allows you to generate a massive statistics for the large invariants' scales. Relatively fast and effective procedures in conjunction with model representations make this program a convenient and reliable choice for data analysis in particle physics.
 
 ## What's it all about?
@@ -102,6 +102,7 @@ Requirements: [Root Cern](https://root.cern/)
 * -n - switch for <a href="https://www.codecogs.com/eqnedit.php?latex=\pi^&plus;n" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\pi^&plus;n" title="\pi^+n" /></a> channel. (Charged pion channel is chosen when entered. No input value required)
 * --trig - number of events
 * --trunc_out - LUND output will be written in 10k events per file format in the output destination directory
+* --extra_Q2 - alternative extrapolation proceedure, where all multipoles extrapolated as 1/Q4 (except M1+ ~ 1/Q6)
 * --docker - Sets all the parametes to default values
 * --seed - Used to initialize the event generator's RNG. Its value is a 32-bit RNG seed based on system clock with microsecond precision.
 * -h - beam polarization ("0" when beam is not polarized)
@@ -115,7 +116,7 @@ Requirements: [Root Cern](https://root.cern/)
 <b>Available kinematic</b> range from MAID data W:[1.08, 2] <a href="https://www.codecogs.com/eqnedit.php?latex=GeV" target="_blank"><img src="https://latex.codecogs.com/gif.latex?GeV" title="GeV" /></a> and <a href="https://www.codecogs.com/eqnedit.php?latex=Q^2" target="_blank"><img src="https://latex.codecogs.com/gif.latex?Q^2" title="Q^2" /></a>:[0.05, 5] <a href="https://www.codecogs.com/eqnedit.php?latex=GeV^2" target="_blank"><img src="https://latex.codecogs.com/gif.latex?GeV^2" title="GeV^2" /></a> with extrapolation through <a href="https://www.codecogs.com/eqnedit.php?latex=Q^2" target="_blank"><img src="https://latex.codecogs.com/gif.latex?Q^2" title="Q^2" /></a> axis.
 
 #### Extrapolation:
-* <a href="https://www.codecogs.com/eqnedit.php?latex=Q^2" target="_blank"><img src="https://latex.codecogs.com/gif.latex?Q^2" title="Q^2" /></a> > 5.0 <a href="https://www.codecogs.com/eqnedit.php?latex=GeV^2" target="_blank"><img src="https://latex.codecogs.com/gif.latex?GeV^2" title="GeV^2" /></a> with <a href="https://www.codecogs.com/eqnedit.php?latex=\dfrac{d\sigma}{d&space;E_e&space;d\Omega_e}&space;=&space;\dfrac{C1}{Q^2^n}" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\dfrac{d\sigma}{d&space;E_e&space;d\Omega_e}&space;=&space;\dfrac{C1}{Q^2^n}" title="\dfrac{d\sigma}{d E_e d\Omega_e} = \dfrac{C1}{Q^2^n}" /></a> expression
+* All multipoles extrapolated as 1/Q2 (except M1+ ~ 1/Q6)
 * if W > 2.0 we assume W = 2.0 (**RC integrals too**)
   
 #### Event sampling proceedure:
