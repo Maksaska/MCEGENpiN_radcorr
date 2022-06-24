@@ -99,7 +99,7 @@ Requirements: [Root Cern](https://root.cern/)
 * --hist - <a href="https://www.codecogs.com/eqnedit.php?latex=(W,&space;Q^2)" target="_blank"><img src="https://latex.codecogs.com/gif.latex?(W,&space;Q^2)" title="(W, Q^2)" /></a>, <a href="https://www.codecogs.com/eqnedit.php?latex=W" target="_blank"><img src="https://latex.codecogs.com/gif.latex?W" title="W" /></a>, <a href="https://www.codecogs.com/eqnedit.php?latex=Q^2" target="_blank"><img src="https://latex.codecogs.com/gif.latex?Q^2" title="Q^2" /></a>, and <a href="https://www.codecogs.com/eqnedit.php?latex=(\cos{\theta},&space;\varphi)" target="_blank"><img src="https://latex.codecogs.com/gif.latex?(\cos{\theta},&space;\varphi)" title="(\cos{\theta}, \varphi)" /></a> histograms will be created (No input value required)
 * --RC - switch for radiative correction procedure (Enabled when entered. No input value required)
 * --weight - switch for uniform distributions in kinematically admissible phase space
-* -n - switch for <a href="https://www.codecogs.com/eqnedit.php?latex=\pi^&plus;n" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\pi^&plus;n" title="\pi^+n" /></a> channel. (Charged pion channel is chosen when entered. No input value required)
+* -n or (--pi_plus_n) - switch for <a href="https://www.codecogs.com/eqnedit.php?latex=\pi^&plus;n" target="_blank"><img src="https://latex.codecogs.com/gif.latex?\pi^&plus;n" title="\pi^+n" /></a> channel. (Charged pion channel is chosen when entered. No input value required)
 * --trig - number of events
 * --trunc_out - LUND output will be written in 10k events per file format in the output destination directory
 * --extra_Q2 - alternative extrapolation proceedure, where all multipoles extrapolated as 1/Q4 (except M1+ ~ 1/Q6)
