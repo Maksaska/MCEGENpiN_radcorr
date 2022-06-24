@@ -93,6 +93,7 @@ void input_check(int argc, char* argv[])
                             {"trunc_out", no_argument, NULL, 't'},
                             {"docker", no_argument, NULL, 'a'},
                             {"extra_Q2", no_argument, NULL, 'f'},
+                            {"pi_plus_n", no_argument, NULL, 'n'},
                             {"seed", required_argument, NULL, 's'},
                             {"output", required_argument, NULL, 'i'},
                             {NULL, 0, NULL, 0}
@@ -212,7 +213,7 @@ void input_check(int argc, char* argv[])
     //path = data_path + "/" + path;
 
     cout << " ------------------------------------------------------------------- " << endl;
-    cout << "| Monte Carlo event generator for exclusive pion electroproduction  | \n| with radiative corrections              \"MCEGENpiN_radcorr V9a\"   |       \n|                                                                   |\n|     Authors: Davydov M. - MSU, Physics dep.                       |\n|              Isupov E.  - MSU, SINP                               |\n|                                                                   |\n| https://github.com/Maksaska/MCEGENpiN_radcorr                     |\n ------------------------------------------------------------------- " << endl;
+    cout << "| Monte Carlo event generator for exclusive pion electroproduction  | \n| with radiative corrections              \"MCEGENpiN_radcorr V9b\"   |       \n|                                                                   |\n|     Authors: Davydov M. - MSU, Physics dep.                       |\n|              Isupov E.  - MSU, SINP                               |\n|                                                                   |\n| https://github.com/Maksaska/MCEGENpiN_radcorr                     |\n ------------------------------------------------------------------- " << endl;
 
     cout << endl;
 
