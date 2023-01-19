@@ -2,9 +2,7 @@
 #include <deque>
 #include <fstream>
 
-using namespace std;
-
-vector<vector<double>> LUND_OUTPUT;
+std::vector<std::vector<double>> LUND_OUTPUT;
 
 struct Particle
 {
@@ -17,7 +15,7 @@ class Event
 {
     private:
         double x, y, z, cross_section, beam_energy;
-        deque<Particle> bunch;
+        std::deque<Particle> bunch;
         int beam_polarization;
         bool cm_system;
     public:
@@ -41,7 +39,7 @@ class Event
         void add_particle(Particle&);
         void clear_event(){bunch.clear();}
         void print_vector();
-        void print_lund(string&);
+        void print_lund(std::string&);
         void set_cm_system();
         void set_lab_system();
         void cm_to_lab(double&, double&);
@@ -109,7 +107,7 @@ void Event::add_particle(Particle& buff)
 
 void Event::print_vector()
 {
-    vector<double> buff;
+    std::vector<double> buff;
     buff.push_back(bunch.size());
     buff.push_back(1); buff.push_back(1); buff.push_back(0);
     buff.push_back(beam_polarization); buff.push_back(11);
@@ -131,18 +129,18 @@ void Event::print_vector()
     }
 }
 
-void Event::print_lund(string& Path)
+void Event::print_lund(std::string& Path)
 {
-    ofstream File;
+    std::ofstream File;
 
-    File.open(Path,fstream::in | fstream::out | fstream::app);
+    File.open(Path,std::fstream::in | std::fstream::out | std::fstream::app);
 
-    File << bunch.size() << "\t1\t1\t0\t" << beam_polarization << "\t11\t" << beam_energy << "\t2212\t0\t" << cross_section << endl;
+    File << bunch.size() << "\t1\t1\t0\t" << beam_polarization << "\t11\t" << beam_energy << "\t2212\t0\t" << cross_section << std::endl;
 
     for(long unsigned int i = 0; i < bunch.size(); i++)
     {
         File << i+1 << "\t0\t1\t" << bunch[i].id << "\t0\t0\t" << (bunch[i].p).Px() << "\t" <<  (bunch[i].p).Py() << "\t"
-        << (bunch[i].p).Pz() << "\t" << (bunch[i].p).E() << "\t" << bunch[i].mass << "\t" << x << "\t" << y << "\t" << z << endl;
+        << (bunch[i].p).Pz() << "\t" << (bunch[i].p).E() << "\t" << bunch[i].mass << "\t" << x << "\t" << y << "\t" << z << std::endl;
     }
 
     File.close();

@@ -1,7 +1,4 @@
-#include <iostream> 
 #include "header.h"
-
-using namespace std;
 
 double fRand(const double& fMin, const double& fMax)
 {
