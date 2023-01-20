@@ -3,17 +3,15 @@
 #include <getopt.h>
 #include <fstream>
 
-using namespace std;
-
 double E0(6.5), R(1), L(10), W_min(1.08), W_max(2.0), Q2_min(0.05), Q2_max(5.0);
 int h(0), N(1000000); double seed_(0);
 bool channel(true), method(false), histogram(false), rad_corr(false);
-string path = "./MCEGENpiN_radcorr.dat";
-string source = "pi0p.csv";
-string source_interp = "pi0p_int.csv";
-vector<vector<double>> data, data_interp;
+std::string path = "./MCEGENpiN_radcorr.dat";
+std::string source = "pi0p.csv";
+std::string source_interp = "pi0p_int.csv";
+std::vector<std::vector<double>> data, data_interp;
 double m_p(0.93827), m_n(0.93957), m_pip(0.13957), m_pi0(0.13498), m_e(0.000511), delta(0.01);
-vector<double> values_rad{9999, 1, 9999, 1};
+std::vector<double> values_rad{9999, 1, 9999, 1};
 
 void add_hadrons(const double& W_, const double& Q2_, const double& theta, const double& phi, Event& bob); /*   Adds hadron system in cm into Event object   */
 void add_electron(const double& W, const double& Q2, Event& bob); /*   Adds outgoing electron in cm into Event object   */
@@ -27,17 +25,17 @@ bool first_HM(true), truncate_out(false), extra_Q2(false);
 int Total_Number(0), Accepted_Number(0);
 /*    -------------------      */
 
-void Reading(string Path, vector<vector<double>>& V)
+void Reading(std::string Path, std::vector<std::vector<double>>& V)
 {
-    string line; stringstream ss;
-    ifstream File;
-    double dub; int w(1); vector<double> Numbers;
+    std::string line; std::stringstream ss;
+    std::ifstream File;
+    double dub; int w(1); std::vector<double> Numbers;
 
     File.open(Path);
 
     if (!File.is_open())
     {
-        cout << "Can't open " << Path << " !" << endl;
+        std::cout << "Can't open " << Path << " !" << std::endl;
     }
     else
     {
@@ -204,7 +202,7 @@ void input_check(int argc, char* argv[])
                 break;
             };
             case '?': default: {
-                cerr << "Unkhown option" << endl;
+                std::cerr << "Unkhown option" << std::endl;
                 break;
             };
         };
@@ -212,25 +210,25 @@ void input_check(int argc, char* argv[])
 
     //path = data_path + "/" + path;
 
-    cout << " ------------------------------------------------------------------- " << endl;
-    cout << "| Monte Carlo event generator for exclusive pion electroproduction  | \n| with radiative corrections              \"MCEGENpiN_radcorr V9b\"   |       \n|                                                                   |\n|     Authors: Davydov M. - MSU, Physics dep.                       |\n|              Isupov E.  - MSU, SINP                               |\n|                                                                   |\n| https://github.com/Maksaska/MCEGENpiN_radcorr                     |\n ------------------------------------------------------------------- " << endl;
+    std::cout << " ------------------------------------------------------------------- " << std::endl;
+    std::cout << "| Monte Carlo event generator for exclusive pion electroproduction  | \n| with radiative corrections              \"MCEGENpiN_radcorr V9b\"   |       \n|                                                                   |\n|     Authors: Davydov M. - MSU, Physics dep.                       |\n|              Isupov E.  - MSU, SINP                               |\n|                                                                   |\n| https://github.com/Maksaska/MCEGENpiN_radcorr                     |\n ------------------------------------------------------------------- " << std::endl;
 
-    cout << endl;
+    std::cout << std::endl;
 
-    cout << "Beam energy is E = " << E0 << " GeV with";
-    if(h != 0){cout << " polarization h = " << h << endl;}
-    else{cout << " no polarization" << endl;}
-    cout << "Chosen kinematic area of (W, Q^2) values is W: " << W_min << " - " << W_max << " GeV , Q2: " << Q2_min << " - " << Q2_max << " GeV^2" << endl;
-    if(channel){cout << "Channel: pi0p with decay" << endl;}
-    else{cout << "Channel: pi+n" << endl;}
-    if(method) cout << "Uniform distribution with weights" << endl;
-    else cout << "Metropolis–Hastings MCMC algorithm" << endl;
-    cout << "Number of events: " << N << endl;
-    if(extra_Q2) cout << "All multiples (amplitudes) extrapolated as 1/Q4 (except M1+ ~ 1/Q6)" << endl;
-    else cout << "All multiples (amplitudes) extrapolated as 1/Q2 (except M1+ ~ 1/Q6)" << endl;
-    if(histogram){cout << "Histograms will be created\n" << endl;}
-    if(rad_corr){cout << "Radiative corrections: Enabled\n" << endl;}
-    else{cout << "Radiative corrections: Disabled\n" << endl;}
+    std::cout << "Beam energy is E = " << E0 << " GeV with";
+    if(h != 0){std::cout << " polarization h = " << h << std::endl;}
+    else{std::cout << " no polarization" << std::endl;}
+    std::cout << "Chosen kinematic area of (W, Q^2) values is W: " << W_min << " - " << W_max << " GeV , Q2: " << Q2_min << " - " << Q2_max << " GeV^2" << std::endl;
+    if(channel){std::cout << "Channel: pi0p with decay" << std::endl;}
+    else{std::cout << "Channel: pi+n" << std::endl;}
+    if(method) std::cout << "Uniform distribution with weights" << std::endl;
+    else std::cout << "Metropolis–Hastings MCMC algorithm" << std::endl;
+    std::cout << "Number of events: " << N << std::endl;
+    if(extra_Q2) std::cout << "All multiples (amplitudes) extrapolated as 1/Q4 (except M1+ ~ 1/Q6)" << std::endl;
+    else std::cout << "All multiples (amplitudes) extrapolated as 1/Q2 (except M1+ ~ 1/Q6)" << std::endl;
+    if(histogram){std::cout << "Histograms will be created\n" << std::endl;}
+    if(rad_corr){std::cout << "Radiative corrections: Enabled\n" << std::endl;}
+    else{std::cout << "Radiative corrections: Disabled\n" << std::endl;}
 
     Reading(source, data);
     Reading(source_interp, data_interp);
@@ -289,10 +287,10 @@ double P(const int& der,const int& n, const double& theta)
     return Value;
 }
 
-vector<complex<double>> Finder(const double& W,  const double& Q2)
+std::vector<std::complex<double>> Finder(const double& W,  const double& Q2)
 {
-    vector<complex<double>> mult;
-    complex<double> buff;
+    std::vector<std::complex<double>> mult;
+    std::complex<double> buff;
 
     for(long unsigned int i = 0; i < data.size(); i++)
     {
@@ -339,10 +337,10 @@ vector<complex<double>> Finder(const double& W,  const double& Q2)
     return mult;
 }
 
-vector<complex<double>> Helicity_amplitudes(const double& W,  const double& Q2, const double& theta)
+std::vector<std::complex<double>> Helicity_amplitudes(const double& W,  const double& Q2, const double& theta)
 {
-    vector<complex<double>> AMP, H; double l;
-    complex<double> buff; buff = 0; bool extra_check(false);
+    std::vector<std::complex<double>> AMP, H; double l;
+    std::complex<double> buff; buff = 0; bool extra_check(false);
 
     double factor_all(1), factor_M1(1), Q2_1(0);
     Q2_1 = Q2;
@@ -427,7 +425,7 @@ vector<complex<double>> Helicity_amplitudes(const double& W,  const double& Q2, 
 double Section(const double& W,  const double& Q2, const double& theta,  const double& phi)
 {
     double S_t, S_l, S_tt, S_lt, S_lt_pr, S, Gamma_flux, eps, nu, L(0.14817);
-    vector<complex<double>> H;
+    std::vector<std::complex<double>> H;
 
     nu =  (W*W + Q2 - m_p*m_p)/(2*m_p);
     eps = 1/(1 + 2*(nu*nu + Q2)/(4*(E0 - nu)*E0 - Q2));
@@ -448,9 +446,9 @@ double Section(const double& W,  const double& Q2, const double& theta,  const d
     return S;
 }
 
-vector<double> Coefficients_lin(const double& x1, const double& y1, const double& x2, const double& y2)
+std::vector<double> Coefficients_lin(const double& x1, const double& y1, const double& x2, const double& y2)
 {
-    vector<double> Abc(2);
+    std::vector<double> Abc(2);
 
     Abc[0] = (y1 - y2)/(x1 - x2);
     Abc[1] = (x1*y2 - y1*x2)/(x1 - x2);
@@ -460,7 +458,7 @@ vector<double> Coefficients_lin(const double& x1, const double& y1, const double
 
 double Linear(const double& W,  const double& Q2, const double& theta,  const double& phi)
 {
-    double S; vector<double> ab;
+    double S; std::vector<double> ab;
     double W_min_d, W_max_d, Q2_min_d, Q2_max_d, S1, S2, S3, S4, S_1, S_2;
 
     W_min_d = floor(W*100)/100;
@@ -519,7 +517,7 @@ double Section_int(const double& W, const double& Q2, const double& E_ini)
 
 double Section_interp_int(const double& W, const double& Q2, const double& E_ini)
 {
-    double S; vector<double> ab;
+    double S; std::vector<double> ab;
     double W_min_d, W_max_d, Q2_min_d, Q2_max_d, S1, S2, S3, S4, S_1, S_2;
 
     W_min_d = floor(W*100)/100;
@@ -943,7 +941,7 @@ bool check_ps(const double& W_, const double& Q2_, const double& E_beam)
     return check;
 }
 
-double Normal(const double& mean, const double& sigma, const string& str)
+double Normal(const double& mean, const double& sigma, const std::string& str)
 {
     double func(-1), rand_v(0);
     double value = fRand(0, 1);

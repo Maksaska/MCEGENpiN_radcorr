@@ -12,16 +12,14 @@
 #include "TH2F.h"
 #include <fstream>
 
-using namespace std;
-
 extern double E0, R, L, W_min, W_max, Q2_min, Q2_max, delta;
-extern vector<vector<double>> data, data_interp, LUND_OUTPUT;
+extern std::vector<std::vector<double>> data, data_interp, LUND_OUTPUT;
 extern int h, N;
 extern double seed_;
-extern string path, source, source_interp;
+extern std::string path, source, source_interp;
 extern bool channel, method, histogram, rad_corr, truncate_out, extra_Q2;
 extern double m_p, m_n, m_pip, m_pi0, m_e;
-extern vector<double> values_rad;
+extern std::vector<double> values_rad;
 
 extern double Q2_line, W_line;
 
@@ -50,9 +48,9 @@ double sin_2(const double& W, const double& Q2); /*   sin(theta)_2 - for polar a
 /* -------- general.cpp -------- */
 
 void input_check(int argc, char* argv[]); /*   This function checks if there any option were passed in main()   */
-void Reading(string Path,vector<vector<double>>&V); /*   Reads the data from csv   */
+void Reading(std::string Path,std::vector<std::vector<double>>&V); /*   Reads the data from csv   */
 double P(const int& der,const int& n, const double& theta); /*   Legendre polynomials   */
-vector<complex<double>> Finder(const double& W,  const double& Q2); /*   it searches for multipoles EMS   */
+std::vector<std::complex<double>> Finder(const double& W,  const double& Q2); /*   it searches for multipoles EMS   */
 void generate_particle(const int& k); /*
                 * This function generates the event
                 * It creates kin. parameters from given E0 [W_min, W_max] && [Q2_min, Q2_max]
@@ -62,13 +60,13 @@ void generate_particle(const int& k); /*
                 * Writes the event in output file
                                     */
 
-vector<double> Coefficients_lin(const double& x1, const double& y1, const double& x2, const double& y2); /*   Coef. for linear interp.   */
+std::vector<double> Coefficients_lin(const double& x1, const double& y1, const double& x2, const double& y2); /*   Coef. for linear interp.   */
 double Linear(const double& W,  const double& Q2, const double& theta,  const double& phi); /*   linear interpolation   */
 double Section(const double& W,  const double& Q2, const double& theta,  const double& phi); /*
                                  Cross_section evaluation from Helicity ampl.
                                                          */
 
-vector<complex<double>> Helicity_amplitudes(const double& W,  const double& Q2, const double& theta);/*   Helicity ampl. eval.   */
+std::vector<std::complex<double>> Helicity_amplitudes(const double& W,  const double& Q2, const double& theta);/*   Helicity ampl. eval.   */
 double Section_int(const double& W, const double& Q2, const double& E_beam); /*   Integral cross section dS/dOmegadE from dataset   */
 double Section_interp_int(const double& W, const double& Q2, const double& E_beam); /*   Integral cross section dS/dOmegadE for random W, Q2   */
 double Spence(const double& x); /*   Spence function   */
